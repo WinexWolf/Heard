@@ -1,0 +1,6 @@
+{
+  "PERCEPTION_MODE": "text_only_log",
+  "note": "Default before probe_models.py has been run with real keys. Re-run scripts/probe_models.py to update.",
+  "nemotron_models": [],
+  "tests": {}
+}
