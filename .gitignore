@@ -10,3 +10,4 @@ data/sessions/*/*.mp4
 data/sessions/*/*.wav
 data/sessions/*/frames/
 *.log
+.DS_Store

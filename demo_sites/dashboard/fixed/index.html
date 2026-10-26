@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sales dashboard</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="bar"><h1>Sales dashboard</h1><button type="button" id="open-modal">Settings</button></header>
+<main>
+<button type="button" id="export">Export CSV</button>
+<h2 id="overview-heading">Overview</h2>
+<div class="tabs" role="tablist" aria-label="Dashboard sections">
+<div class="tab active" role="tab" id="tab-overview" aria-selected="true" aria-controls="panel-overview" tabindex="0" data-panel="panel-overview">Overview</div>
+<div class="tab" role="tab" id="tab-orders" aria-selected="false" aria-controls="panel-orders" tabindex="0" data-panel="panel-orders">Orders</div>
+<div class="tab" role="tab" id="tab-users" aria-selected="false" aria-controls="panel-users" tabindex="0" data-panel="panel-users">Users</div>
+</div>
+<div class="panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview"><p>Revenue is up 12% this week.</p></div>
+<div class="panel" id="panel-orders" role="tabpanel" aria-labelledby="tab-orders" hidden>
+<table><caption>Recent orders</caption><thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Total</th></tr></thead>
+<tbody><tr><td>#1001</td><td>Ada</td><td>$120</td></tr><tr><td>#1002</td><td>Lin</td><td>$80</td></tr></tbody></table>
+</div>
+<div class="panel" id="panel-users" role="tabpanel" aria-labelledby="tab-users" hidden><p>1,204 active users.</p></div>
+</main>
+<div id="modal" class="modal" hidden><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<h2 id="modal-title">Settings</h2>
+<label for="refresh">Refresh interval</label>
+<select id="refresh"><option>1 minute</option><option>5 minutes</option></select>
+<p><button type="button" id="close-modal">Close</button></p>
+</div></div>
+<script src="app.js"></script>
+</body></html>

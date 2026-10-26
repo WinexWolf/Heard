@@ -1,0 +1,34 @@
+[
+  {
+    "id": "B03",
+    "site": "signup",
+    "file": "index.html",
+    "selector": "#email",
+    "category": "missing_label",
+    "description": "Email input relies on placeholder only; no <label>."
+  },
+  {
+    "id": "B06",
+    "site": "signup",
+    "file": "index.html",
+    "selector": "#email-error",
+    "category": "error_not_announced",
+    "description": "Validation error text is injected without role=alert or aria-live."
+  },
+  {
+    "id": "B09",
+    "site": "signup",
+    "file": "index.html",
+    "selector": "#submit-btn",
+    "category": "label_in_name",
+    "description": "aria-label 'Continue' contradicts visible text 'Create account' (WCAG 2.5.3)."
+  },
+  {
+    "id": "B11",
+    "site": "signup",
+    "file": "index.html",
+    "selector": "#terms",
+    "category": "missing_state",
+    "description": "Custom checkbox div has no role or checked state."
+  }
+]

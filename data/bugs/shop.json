@@ -1,0 +1,34 @@
+[
+  {
+    "id": "B01",
+    "site": "shop",
+    "file": "index.html",
+    "selector": "#cart-btn",
+    "category": "missing_name",
+    "description": "Icon-only cart button has no accessible name (svg is aria-hidden, no label)."
+  },
+  {
+    "id": "B02",
+    "site": "shop",
+    "file": "index.html",
+    "selector": "img.hero",
+    "category": "missing_alt",
+    "description": "Hero image has no alt attribute."
+  },
+  {
+    "id": "B04",
+    "site": "shop",
+    "file": "index.html",
+    "selector": "a.learn-more",
+    "category": "vague_link",
+    "description": "Three links all read 'Learn more' with no product context."
+  },
+  {
+    "id": "B10",
+    "site": "shop",
+    "file": "index.html",
+    "selector": ".cart-item .edit-btn",
+    "category": "repeated_control",
+    "description": "Five identical 'Edit' buttons with no indication of which cart item they edit."
+  }
+]

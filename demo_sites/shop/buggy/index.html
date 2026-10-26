@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixel Shop</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="bar"><h1>Pixel Shop</h1>
+<button id="cart-btn" class="icon-btn" type="button"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h10L20 7H7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg></button></header>
+<main>
+<img class="hero" src="hero.svg" width="640" height="160">
+<h2>Featured keyboards</h2>
+<ul class="products">
+<li class="product"><h3>Pixel 60</h3><p>Compact 60% board.</p><a class="learn-more" href="#pixel-60">Learn more</a><button type="button" class="add">Add Pixel 60</button></li>
+<li class="product"><h3>Pixel 75</h3><p>Hot-swappable 75% board.</p><a class="learn-more" href="#pixel-75">Learn more</a><button type="button" class="add">Add Pixel 75</button></li>
+<li class="product"><h3>Pixel TKL</h3><p>Tenkeyless with knob.</p><a class="learn-more" href="#pixel-tkl">Learn more</a><button type="button" class="add">Add Pixel TKL</button></li>
+</ul>
+<h2 id="cart">Your cart</h2>
+<ul class="cart">
+<li class="cart-item"><span>Pixel 60 x 1</span><button type="button" class="edit-btn">Edit</button></li>
+<li class="cart-item"><span>Pixel 75 x 2</span><button type="button" class="edit-btn">Edit</button></li>
+<li class="cart-item"><span>Keycap set x 1</span><button type="button" class="edit-btn">Edit</button></li>
+<li class="cart-item"><span>USB-C cable x 3</span><button type="button" class="edit-btn">Edit</button></li>
+<li class="cart-item"><span>Switch pack x 1</span><button type="button" class="edit-btn">Edit</button></li>
+</ul>
+<button type="button" id="checkout">Checkout</button>
+<p id="status" class="sr-only"></p>
+</main>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "B05",
+    "site": "dashboard",
+    "file": "index.html",
+    "selector": "#export",
+    "category": "div_button",
+    "description": "div acts as a button: no role=button, no native button semantics."
+  },
+  {
+    "id": "B07",
+    "site": "dashboard",
+    "file": "index.html",
+    "selector": "#modal",
+    "category": "modal_dialog",
+    "description": "Modal has no role=dialog, no accessible name, and focus is not moved into it."
+  },
+  {
+    "id": "B08",
+    "site": "dashboard",
+    "file": "index.html",
+    "selector": ".tabs",
+    "category": "tab_widget",
+    "description": "Tab widget lacks tablist/tab/tabpanel roles and aria-selected."
+  },
+  {
+    "id": "B12",
+    "site": "dashboard",
+    "file": "index.html",
+    "selector": "#overview-heading",
+    "category": "heading_skip",
+    "description": "Heading level skips from h1 to h3."
+  }
+]
