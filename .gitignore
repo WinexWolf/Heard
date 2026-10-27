@@ -6,8 +6,6 @@ node_modules/
 frontend/dist/
 .pytest_cache/
 data/tmp/
-data/sessions/*/*.mp4
-data/sessions/*/*.wav
 data/sessions/*/frames/
 *.log
 .DS_Store

@@ -1,0 +1,10 @@
+{
+  "id": "shop_buggy",
+  "site": "shop",
+  "variant": "buggy",
+  "label": "simulated screen reader",
+  "source_dir": "demo_sites/shop/buggy",
+  "duration": 54.26,
+  "steps": 20,
+  "tts": "espeak-ng"
+}

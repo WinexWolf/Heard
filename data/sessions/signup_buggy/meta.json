@@ -1,0 +1,10 @@
+{
+  "id": "signup_buggy",
+  "site": "signup",
+  "variant": "buggy",
+  "label": "simulated screen reader",
+  "source_dir": "demo_sites/signup/buggy",
+  "duration": 23.92,
+  "steps": 8,
+  "tts": "espeak-ng"
+}

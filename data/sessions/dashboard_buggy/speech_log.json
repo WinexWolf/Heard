@@ -1,0 +1,30 @@
+[
+  {
+    "t": 0.88,
+    "text": "Sales dashboard, heading level 1"
+  },
+  {
+    "t": 4.08,
+    "text": "Overview, heading level 3"
+  },
+  {
+    "t": 7.14,
+    "text": "Settings, button"
+  },
+  {
+    "t": 10.93,
+    "text": "Export CSV, clickable"
+  },
+  {
+    "t": 14.18,
+    "text": "Overview, clickable"
+  },
+  {
+    "t": 16.84,
+    "text": "Orders, clickable"
+  },
+  {
+    "t": 20.7,
+    "text": "Users, clickable"
+  }
+]

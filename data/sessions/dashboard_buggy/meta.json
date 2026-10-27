@@ -1,0 +1,10 @@
+{
+  "id": "dashboard_buggy",
+  "site": "dashboard",
+  "variant": "buggy",
+  "label": "simulated screen reader",
+  "source_dir": "demo_sites/dashboard/buggy",
+  "duration": 23.78,
+  "steps": 9,
+  "tts": "espeak-ng"
+}

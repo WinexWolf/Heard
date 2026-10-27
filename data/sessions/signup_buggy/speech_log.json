@@ -1,0 +1,30 @@
+[
+  {
+    "t": 0.9,
+    "text": "Create account, heading level 1"
+  },
+  {
+    "t": 4.36,
+    "text": "Full name, edit text"
+  },
+  {
+    "t": 7.25,
+    "text": "Email address, edit text"
+  },
+  {
+    "t": 10.21,
+    "text": "Password, edit text"
+  },
+  {
+    "t": 13.02,
+    "text": "I agree to the terms, clickable"
+  },
+  {
+    "t": 16.28,
+    "text": "I agree to the terms, clickable"
+  },
+  {
+    "t": 19.54,
+    "text": "Continue, button"
+  }
+]
