@@ -9,3 +9,5 @@ data/tmp/
 data/sessions/*/frames/
 *.log
 .DS_Store
+.history
+SUBMISSION.md
