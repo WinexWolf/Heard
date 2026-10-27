@@ -60,7 +60,7 @@ Python dependencies live in `pyproject.toml` / `uv.lock`; add one with `uv add <
 **No keys needed for the cached demo:**
 
 ```bash
-make run          # builds the frontend and serves http://localhost:8000
+make run          # builds the frontend and serves http://localhost:8000 (landing page; the demo is at /app/)
 ```
 
 **With keys (real run), in this order:**

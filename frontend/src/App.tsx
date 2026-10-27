@@ -1,41 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Bench, Caps, CostAgg, Edit, FindingResult, Result, Session } from './types'
+import { BTN_PRIMARY, BTN_SECONDARY, Dot, hue } from './design'
+import { ThemeToggle } from './theme'
 
 const TABS = ['Session', 'Benchmark', 'Cost and models'] as const
 type Tab = (typeof TABS)[number]
 const STAGES = ['Perception', 'Findings', 'Citation', 'Patch', 'Verify'] as const
 const STAGE_KEY: Record<string, number> = { perception: 0, findings: 1, citation: 2, patch: 3, verify: 4, done: 5 }
 
-// One stable colour per issue family (class names spelled out so Tailwind keeps them).
-const HUE = {
-  blue: { dot: 'bg-blue', bar: 'border-l-blue' },
-  indigo: { dot: 'bg-indigo', bar: 'border-l-indigo' },
-  purple: { dot: 'bg-purple', bar: 'border-l-purple' },
-  pink: { dot: 'bg-pink', bar: 'border-l-pink' },
-  orange: { dot: 'bg-orange', bar: 'border-l-orange' },
-  teal: { dot: 'bg-teal', bar: 'border-l-teal' },
-}
-const CATEGORY: Record<string, keyof typeof HUE> = {
-  missing_name: 'blue', missing_alt: 'blue', missing_label: 'blue', label_in_name: 'blue',
-  vague_link: 'indigo', repeated_control: 'indigo', other: 'indigo',
-  div_button: 'purple', missing_state: 'purple', tab_widget: 'purple',
-  modal_dialog: 'pink', error_not_announced: 'orange', heading_skip: 'teal',
-}
-const hue = (issue: string) => HUE[CATEGORY[issue] ?? 'indigo']
 const SEV: Record<string, string> = { critical: 'bg-red/10 text-red-text', high: 'bg-orange/10 text-orange-text', medium: 'bg-ink/5 text-ink', low: 'bg-ink/5 text-muted' }
 const ROLE_DOT: Record<string, string> = { perception: 'bg-blue', patch: 'bg-purple', escalation: 'bg-pink' }
 
-const BTN = 'min-h-tap rounded-sm px-2 py-1.5 text-callout font-semibold disabled:cursor-not-allowed'
-const BTN_PRIMARY = `${BTN} bg-accent-fill text-white shadow hover:bg-accent-strong disabled:bg-card disabled:text-muted disabled:shadow-none`
-const BTN_SECONDARY = `${BTN} border bg-card text-accent-text hover:bg-accent/10 disabled:text-muted`
 const CELL = 'border-b px-1.5 py-1'
 
 const fmt = (n: number, d = 2) => n.toFixed(d)
 const money = (c?: CostAgg) => (!c ? '–' : c.cost_known === false ? 'price not set' : `$${c.cost_usd.toFixed(4)}`)
-
-function Dot({ className }: { className: string }) {
-  return <span aria-hidden="true" className={`inline-block h-1 w-1 shrink-0 rounded-full ${className}`} />
-}
 
 function Badge({ children, dot }: { children: React.ReactNode; dot?: string }) {
   return <span className="inline-flex items-baseline gap-1 rounded-full bg-card px-1.5 text-caption leading-6 text-ink shadow">{dot && <Dot className={dot} />}{children}</span>
@@ -68,26 +47,6 @@ function Diff({ edits }: { edits: Edit[] }) {
   )
 }
 
-const THEMES = ['System', 'Light', 'Dark'] as const
-type Theme = (typeof THEMES)[number]
-const THEME_ICON: Record<Theme, string> = { System: '◐', Light: '☀', Dark: '☾' }
-
-function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    try { const t = localStorage.getItem('heard-theme'); return t === 'light' ? 'Light' : t === 'dark' ? 'Dark' : 'System' } catch { return 'System' }
-  })
-  useEffect(() => {
-    const mq = matchMedia('(prefers-color-scheme: dark)')
-    const apply = () => { document.documentElement.dataset.theme = theme === 'Dark' || (theme === 'System' && mq.matches) ? 'dark' : 'light' }
-    apply()
-    try { if (theme === 'System') localStorage.removeItem('heard-theme'); else localStorage.setItem('heard-theme', theme.toLowerCase()) } catch { /* storage unavailable */ }
-    if (theme !== 'System') return
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [theme])
-  return [theme, setTheme] as const
-}
-
 function useAudio() {
   const ref = useRef<HTMLAudioElement | null>(null)
   return (path: string | null) => {
@@ -114,7 +73,6 @@ export default function App() {
   const [benchErr, setBenchErr] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
   const play = useAudio()
-  const [theme, setTheme] = useTheme()
 
   useEffect(() => {
     fetch('/api/capabilities').then(r => r.json()).then(setCaps).catch(() => setError('Could not reach the Heard API.'))
@@ -167,22 +125,18 @@ export default function App() {
     <div className="min-h-screen">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-1 focus:top-1 focus:z-50 focus:rounded-sm focus:bg-card focus:px-2 focus:py-1">Skip to content</a>
       <header className="mx-auto max-w-page space-y-2 px-2 pb-2 pt-4 sm:px-3">
-        <div className="space-y-1">
-          <h1 className="text-largeTitle tracking-tight">Heard</h1>
-          <p className="text-callout text-ink">Linters read your code. Heard listens to your product.</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="space-y-1">
+            <h1 className="text-largeTitle tracking-tight"><a href="/" className="text-ink no-underline hover:underline">Heard</a></h1>
+            <p className="text-callout text-ink">Linters read your code. Heard listens to your product.</p>
+          </div>
+          <ThemeToggle />
         </div>
         <ul className="flex flex-wrap gap-1" aria-label="Configuration">
           <li><Badge dot="bg-teal">Perception mode: {caps?.perception_mode ?? '…'}</Badge></li>
           {caps && Object.entries(caps.models).map(([k, v]) => <li key={k}><Badge dot={ROLE_DOT[k]}>{k}: {v ?? 'not configured'}</Badge></li>)}
           <li><Badge dot="bg-green">Powered by Nebius Token Factory + NVIDIA Nemotron + Tavily</Badge></li>
         </ul>
-        <div role="group" aria-label="Appearance" className="inline-flex gap-1 rounded-md bg-ink/5 p-1">
-          {THEMES.map(t => (
-            <button key={t} type="button" aria-pressed={theme === t} onClick={() => setTheme(t)}
-              className={`min-h-tap rounded-sm px-2 py-1.5 text-subheadline font-semibold ${theme === t ? 'bg-card text-ink shadow' : 'text-ink hover:bg-card'}`}>
-              <span aria-hidden="true">{THEME_ICON[t]} </span>{t}</button>
-          ))}
-        </div>
       </header>
 
       <main id="main">
@@ -338,7 +292,7 @@ export default function App() {
         </section>
         </div>
       </main>
-      <footer className="mx-auto max-w-page px-2 pb-4 text-footnote text-ink sm:px-3">MIT licensed · Sessions are simulated screen-reader sessions · Verification is an accessibility-tree proxy.</footer>
+      <footer className="mx-auto max-w-page px-2 pb-4 text-footnote text-ink sm:px-3"><a href="/">About Heard</a> · MIT licensed · Sessions are simulated screen-reader sessions · Verification is an accessibility-tree proxy.</footer>
     </div>
   )
 }

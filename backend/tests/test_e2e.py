@@ -24,9 +24,10 @@ def server():
 def test_cached_demo_renders_and_is_accessible(server):
     with sync_playwright() as pw:
         b = pw.chromium.launch(**a11y.chromium_launch_kwargs()); pg = b.new_page(viewport={"width": 1400, "height": 900})
-        pg.goto(server)
+        pg.goto(server + "/app")                                                  # redirects to /app/
         pg.get_by_test_id("rejected-count").wait_for()
         assert pg.get_by_role("heading", name="Heard").is_visible()
+        assert pg.get_by_role("heading", name="Heard").get_by_role("link", name="Heard").get_attribute("href") == "/"
         assert pg.get_by_role("tab").count() == 3
         assert pg.get_by_role("group", name="Findings timeline").is_visible()
         assert pg.get_by_role("group", name="Hear it").get_by_role("button", name="After").is_visible() or True
@@ -48,4 +49,20 @@ def test_cached_demo_renders_and_is_accessible(server):
             assert v == [], f"dark {tab}: {v}"
         pg.reload(); pg.get_by_test_id("rejected-count").wait_for()
         assert pg.evaluate("document.documentElement.dataset.theme") == "dark"
+        b.close()
+
+
+def test_landing_page_is_accessible_and_links_to_demo(server):
+    with sync_playwright() as pw:
+        b = pw.chromium.launch(**a11y.chromium_launch_kwargs()); pg = b.new_page(viewport={"width": 1400, "height": 900})
+        pg.goto(server)
+        assert pg.get_by_role("heading", level=1).inner_text().startswith("Linters read your code")
+        pg.get_by_role("heading", name="What linters miss").wait_for()                     # benchmark data loaded
+        pg.get_by_role("button", name="Play after audio").wait_for()                       # cached example loaded
+        assert pg.get_by_role("link", name="Open the demo").first.get_attribute("href") == "/app/"
+        pg.add_script_tag(path=str(a11y.AXE_JS))
+        for theme in ["Light", "Dark"]:
+            pg.get_by_role("group", name="Appearance").get_by_role("button", name=theme).click()
+            v = pg.evaluate("axe.run().then(r => r.violations.map(v => v.id + ': ' + v.help))")
+            assert v == [], f"landing {theme}: {v}"
         b.close()
