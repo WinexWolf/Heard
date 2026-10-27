@@ -1,6 +1,6 @@
 """Benchmark: axe-core alone vs Heard on the 12 seeded bugs. Honest: reports categories where axe wins.
 
-  python eval/run_eval.py            # uses data/cache/*.json (run scripts/precompute_cache.py first)
+  uv run eval/run_eval.py            # uses data/cache/*.json (run scripts/precompute_cache.py first)
 """
 import json, sys
 from collections import defaultdict
@@ -70,7 +70,7 @@ def main():
     md = ["# Heard benchmark: axe-core vs Heard\n"]
     if placeholder:
         md.append("> **PLACEHOLDER — NOT A MEASUREMENT OF HEARD.** These Heard columns come from the non-model oracle stub (reference mapping), "
-                  "so Heard detects what the stub is told to. The axe-core column IS real. Run `python scripts/precompute_cache.py` with live keys, then `python eval/run_eval.py`.\n")
+                  "so Heard detects what the stub is told to. The axe-core column IS real. Run `uv run scripts/precompute_cache.py` with live keys, then `uv run eval/run_eval.py`.\n")
     md.append(f"- Perception mode: {', '.join(sorted(mode))}  \n- Result source: {', '.join(sorted(source))}\n")
     md.append(f"| Metric | Value |\n|---|---|\n| axe-core detected | {axe_n}/{n} |\n| Heard detected | {heard_n}/{n} |\n| Fixes verified | {fix_n}/{heard_n} |\n| Rejected as unsupported | {rejected_total} |\n| Model calls / cost (USD, if prices set) / latency | {cost['calls']} / {cost['cost_usd']:.4f} / {cost['latency_s']:.1f}s |\n")
     md.append("## Per bug\n\n| Bug | Site | Category | axe | Heard | Fix verified |\n|---|---|---|---|---|---|")

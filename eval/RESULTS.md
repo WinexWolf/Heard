@@ -1,6 +1,6 @@
 # Heard benchmark: axe-core vs Heard
 
-> **PLACEHOLDER — NOT A MEASUREMENT OF HEARD.** These Heard columns come from the non-model oracle stub (reference mapping), so Heard detects what the stub is told to. The axe-core column IS real. Run `python scripts/precompute_cache.py` with live keys, then `python eval/run_eval.py`.
+> **PLACEHOLDER — NOT A MEASUREMENT OF HEARD.** These Heard columns come from the non-model oracle stub (reference mapping), so Heard detects what the stub is told to. The axe-core column IS real. Run `uv run scripts/precompute_cache.py` with live keys, then `uv run eval/run_eval.py`.
 
 - Perception mode: oracle_stub  
 - Result source: oracle_stub

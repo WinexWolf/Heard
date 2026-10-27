@@ -47,15 +47,15 @@ flowchart LR
 
 ## Quick start
 
-Prerequisites: Python 3.11+, Node 20+, ffmpeg, a TTS (macOS `say`, or `espeak-ng` on Linux).
+Prerequisites: [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 from `.python-version`), Node 20+, ffmpeg, a TTS (macOS `say`, or `espeak-ng` on Linux).
 
 ```bash
 git clone <this repo> && cd Heard
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r backend/requirements.txt && playwright install chromium
-(cd scripts && npm install) && (cd frontend && npm install)
+make setup                      # uv sync + Playwright Chromium + npm install (frontend, scripts)
 cp .env.example .env            # then fill in real values (never commit .env)
 ```
+
+Python dependencies live in `pyproject.toml` / `uv.lock`; add one with `uv add <pkg>` (or `uv add --dev <pkg>`).
 
 **No keys needed for the cached demo:**
 
@@ -66,14 +66,14 @@ make run          # builds the frontend and serves http://localhost:8000
 **With keys (real run), in this order:**
 
 ```bash
-python scripts/probe_models.py        # M0: lists Nemotron IDs, tests text/image/video/audio, writes data/capabilities.json (PERCEPTION_MODE)
+uv run scripts/probe_models.py        # M0: lists Nemotron IDs, tests text/image/video/audio, writes data/capabilities.json (PERCEPTION_MODE)
 # put the printed IDs into MODEL_PERCEPTION / MODEL_PATCH / MODEL_ESCALATION and the prices from the Nebius console into .env
-python scripts/precompute_cache.py    # live analysis of all demo sessions -> data/cache/
-python eval/run_eval.py               # axe vs Heard -> eval/results.json, eval/RESULTS.md
+uv run scripts/precompute_cache.py    # live analysis of all demo sessions -> data/cache/
+uv run eval/run_eval.py               # axe vs Heard -> eval/results.json, eval/RESULTS.md
 make run                              # "Run live" is now enabled in the UI
 ```
 
-Other commands: `python scripts/generate_sessions.py` (regenerate the simulated sessions), `python scripts/build_demo_sites.py` (regenerate the reference `fixed/` sites), `make test`.
+Other commands: `uv run scripts/generate_sessions.py` (regenerate the simulated sessions), `uv run scripts/build_demo_sites.py` (regenerate the reference `fixed/` sites), `make test`.
 
 ## Demo sites and seeded bugs
 
@@ -87,7 +87,7 @@ To add a real recording (e.g. VoiceOver or NVDA), create `data/sessions/real_<na
 
 ## Results
 
-Source: `eval/RESULTS.md` (regenerate with `python eval/run_eval.py`). Currently:
+Source: `eval/RESULTS.md` (regenerate with `uv run eval/run_eval.py`). Currently:
 
 | Metric | Value |
 |---|---|

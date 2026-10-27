@@ -1,7 +1,7 @@
 """Run every demo session through the pipeline and cache the results (data/cache/<id>.json).
 
-  python scripts/precompute_cache.py          # live Token Factory + Tavily if keys are set, else the labeled oracle stub
-  python scripts/precompute_cache.py --stub   # force the non-model placeholder
+  uv run scripts/precompute_cache.py          # live Token Factory + Tavily if keys are set, else the labeled oracle stub
+  uv run scripts/precompute_cache.py --stub   # force the non-model placeholder
 """
 import json, shutil, sys
 from pathlib import Path
