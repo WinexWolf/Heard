@@ -26,7 +26,7 @@ const SEV: Record<string, string> = { critical: 'bg-red/10 text-red-text', high:
 const ROLE_DOT: Record<string, string> = { perception: 'bg-blue', patch: 'bg-purple', escalation: 'bg-pink' }
 
 const BTN = 'min-h-tap rounded-sm px-2 py-1.5 text-callout font-semibold disabled:cursor-not-allowed'
-const BTN_PRIMARY = `${BTN} bg-accent-text text-white shadow hover:bg-accent-strong disabled:bg-card disabled:text-muted disabled:shadow-none`
+const BTN_PRIMARY = `${BTN} bg-accent-fill text-white shadow hover:bg-accent-strong disabled:bg-card disabled:text-muted disabled:shadow-none`
 const BTN_SECONDARY = `${BTN} border bg-card text-accent-text hover:bg-accent/10 disabled:text-muted`
 const CELL = 'border-b px-1.5 py-1'
 
@@ -68,6 +68,26 @@ function Diff({ edits }: { edits: Edit[] }) {
   )
 }
 
+const THEMES = ['System', 'Light', 'Dark'] as const
+type Theme = (typeof THEMES)[number]
+const THEME_ICON: Record<Theme, string> = { System: '◐', Light: '☀', Dark: '☾' }
+
+function useTheme() {
+  const [theme, setTheme] = useState<Theme>(() => {
+    try { const t = localStorage.getItem('heard-theme'); return t === 'light' ? 'Light' : t === 'dark' ? 'Dark' : 'System' } catch { return 'System' }
+  })
+  useEffect(() => {
+    const mq = matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => { document.documentElement.dataset.theme = theme === 'Dark' || (theme === 'System' && mq.matches) ? 'dark' : 'light' }
+    apply()
+    try { if (theme === 'System') localStorage.removeItem('heard-theme'); else localStorage.setItem('heard-theme', theme.toLowerCase()) } catch { /* storage unavailable */ }
+    if (theme !== 'System') return
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [theme])
+  return [theme, setTheme] as const
+}
+
 function useAudio() {
   const ref = useRef<HTMLAudioElement | null>(null)
   return (path: string | null) => {
@@ -94,6 +114,7 @@ export default function App() {
   const [benchErr, setBenchErr] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
   const play = useAudio()
+  const [theme, setTheme] = useTheme()
 
   useEffect(() => {
     fetch('/api/capabilities').then(r => r.json()).then(setCaps).catch(() => setError('Could not reach the Heard API.'))
@@ -155,6 +176,13 @@ export default function App() {
           {caps && Object.entries(caps.models).map(([k, v]) => <li key={k}><Badge dot={ROLE_DOT[k]}>{k}: {v ?? 'not configured'}</Badge></li>)}
           <li><Badge dot="bg-green">Powered by Nebius Token Factory + NVIDIA Nemotron + Tavily</Badge></li>
         </ul>
+        <div role="group" aria-label="Appearance" className="inline-flex gap-1 rounded-md bg-ink/5 p-1">
+          {THEMES.map(t => (
+            <button key={t} type="button" aria-pressed={theme === t} onClick={() => setTheme(t)}
+              className={`min-h-tap rounded-sm px-2 py-1.5 text-subheadline font-semibold ${theme === t ? 'bg-card text-ink shadow' : 'text-ink hover:bg-card'}`}>
+              <span aria-hidden="true">{THEME_ICON[t]} </span>{t}</button>
+          ))}
+        </div>
       </header>
 
       <main id="main">
@@ -164,7 +192,7 @@ export default function App() {
               {TABS.map((t, i) => (
                 <button key={t} id={`tab-${i}`} role="tab" type="button" aria-selected={tab === t} aria-controls={`panel-${i}`} tabIndex={tab === t ? 0 : -1}
                   onClick={() => setTab(t)} onKeyDown={e => onTabKey(e, i)}
-                  className={`min-h-tap rounded-sm px-2 py-1.5 text-callout font-semibold ${tab === t ? 'bg-accent-text text-white shadow' : 'text-ink hover:bg-card'}`}>{t}</button>
+                  className={`min-h-tap rounded-sm px-2 py-1.5 text-callout font-semibold ${tab === t ? 'bg-accent-fill text-white shadow' : 'text-ink hover:bg-card'}`}>{t}</button>
               ))}
             </div>
           </div>
@@ -192,7 +220,7 @@ export default function App() {
           <ol className="flex flex-wrap gap-1 text-footnote" aria-label="Pipeline progress">
             {STAGES.map((s, i) => {
               const state = stage > i || stage === 5 ? 'done' : stage === i ? 'active' : 'pending'
-              return <li key={s} className={`rounded-full px-1.5 leading-6 font-semibold shadow ${state === 'done' ? 'bg-card text-success-text' : state === 'active' ? 'bg-accent-text text-white' : 'bg-card text-muted'}`}>
+              return <li key={s} className={`rounded-full px-1.5 leading-6 font-semibold shadow ${state === 'done' ? 'bg-card text-success-text' : state === 'active' ? 'bg-accent-fill text-white' : 'bg-card text-muted'}`}>
                 <span aria-hidden="true">{state === 'done' ? '✓ ' : state === 'active' ? '… ' : '○ '}</span>{s}<span className="sr-only"> ({state})</span></li>
             })}
           </ol>

@@ -39,4 +39,13 @@ def test_cached_demo_renders_and_is_accessible(server):
         # keyboard: arrow keys move between tabs
         pg.get_by_role("tab", name="Session").focus(); pg.keyboard.press("ArrowRight")
         assert pg.get_by_role("tab", name="Benchmark").get_attribute("aria-selected") == "true"
+        # dark mode: same zero-violation bar, and the choice survives a reload
+        pg.get_by_role("group", name="Appearance").get_by_role("button", name="Dark").click()
+        assert pg.evaluate("document.documentElement.dataset.theme") == "dark"
+        for tab in ["Session", "Benchmark", "Cost and models"]:
+            pg.get_by_role("tab", name=tab).click()
+            v = pg.evaluate("axe.run().then(r => r.violations.map(v => v.id + ': ' + v.help))")
+            assert v == [], f"dark {tab}: {v}"
+        pg.reload(); pg.get_by_test_id("rejected-count").wait_for()
+        assert pg.evaluate("document.documentElement.dataset.theme") == "dark"
         b.close()
