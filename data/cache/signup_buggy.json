@@ -1,0 +1,442 @@
+{
+  "session_id": "signup_buggy",
+  "site": "signup",
+  "source": "oracle_stub",
+  "perception_mode": "oracle_stub",
+  "models": {
+    "perception": "",
+    "patch": "",
+    "escalation": ""
+  },
+  "generated_at": "2026-10-26T16:54:33",
+  "label": "simulated screen reader",
+  "findings": [
+    {
+      "finding": {
+        "id": "O-B03",
+        "t_start": 7.25,
+        "t_end": 8.75,
+        "announced_text": "Email address, edit text",
+        "visible_text_or_description": "Email input relies on placeholder only; no <label>.",
+        "issue_type": "missing_label",
+        "severity": "high",
+        "wcag_guess": "1.3.1",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 2,
+        "t": 7.25,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#email",
+        "html": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\" style=\"\">",
+        "name": "Email address",
+        "role": "textbox",
+        "visible_text": "",
+        "announcement": "Email address, edit text"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 1.3.1: Info and Relationships",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\">",
+              "new_str": "<label for=\"email\">Email address</label>\n<input id=\"email\" type=\"email\" placeholder=\"you@example.com\" autocomplete=\"email\">"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "programmatic label present = True; accessible name = 'Email address'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "label-content-name-mismatch": 1
+            },
+            "axe_after": {
+              "label-content-name-mismatch": 1
+            },
+            "after_announcement": "Email address, edit text"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\">",
+            "new_str": "<label for=\"email\">Email address</label>\n<input id=\"email\" type=\"email\" placeholder=\"you@example.com\" autocomplete=\"email\">"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "programmatic label present = True; accessible name = 'Email address'"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "label-content-name-mismatch": 1
+          },
+          "axe_after": {
+            "label-content-name-mismatch": 1
+          },
+          "after_announcement": "Email address, edit text"
+        }
+      },
+      "bug_id": "B03",
+      "before_audio": "sessions/signup_buggy/step_2_before.wav",
+      "after_audio": "cache/signup_buggy/after_O-B03.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B06",
+        "t_start": 22.07,
+        "t_end": 23.57,
+        "announced_text": "",
+        "visible_text_or_description": "Validation error text is injected without role=alert or aria-live.",
+        "issue_type": "error_not_announced",
+        "severity": "high",
+        "wcag_guess": "4.1.3",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 7,
+        "t": 22.07,
+        "kind": "action",
+        "key": "Enter",
+        "selector": "#submit-btn",
+        "html": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
+        "name": "Continue",
+        "role": "button",
+        "visible_text": "Create account",
+        "announcement": "",
+        "screen_change": "screen now also shows: Enter a valid email address.",
+        "live_region": false,
+        "acted_on": "Continue, button",
+        "silent": true
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.3: Status Messages",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div id=\"email-error\" class=\"error\"></div>",
+              "new_str": "<div id=\"email-error\" class=\"error\" role=\"alert\"></div>"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "live region text after activating control: ['Enter a valid email address.']"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "label-content-name-mismatch": 1
+            },
+            "axe_after": {
+              "label-content-name-mismatch": 1
+            },
+            "after_announcement": "Continue, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div id=\"email-error\" class=\"error\"></div>",
+            "new_str": "<div id=\"email-error\" class=\"error\" role=\"alert\"></div>"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "live region text after activating control: ['Enter a valid email address.']"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "label-content-name-mismatch": 1
+          },
+          "axe_after": {
+            "label-content-name-mismatch": 1
+          },
+          "after_announcement": "Continue, button"
+        }
+      },
+      "bug_id": "B06",
+      "before_audio": null,
+      "after_audio": "cache/signup_buggy/after_O-B06.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B09",
+        "t_start": 19.54,
+        "t_end": 21.04,
+        "announced_text": "Continue, button",
+        "visible_text_or_description": "aria-label 'Continue' contradicts visible text 'Create account' (WCAG 2.5.3).",
+        "issue_type": "label_in_name",
+        "severity": "high",
+        "wcag_guess": "2.5.3",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 6,
+        "t": 19.54,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#submit-btn",
+        "html": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
+        "name": "Continue",
+        "role": "button",
+        "visible_text": "Create account",
+        "announcement": "Continue, button"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 2.5.3: Label in Name",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "aria-label=\"Continue\">Create account",
+              "new_str": ">Create account"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "visible='create account' name='create account'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "label-content-name-mismatch": 1
+            },
+            "axe_after": {},
+            "after_announcement": "Create account, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "aria-label=\"Continue\">Create account",
+            "new_str": ">Create account"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "visible='create account' name='create account'"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "label-content-name-mismatch": 1
+          },
+          "axe_after": {},
+          "after_announcement": "Create account, button"
+        }
+      },
+      "bug_id": "B09",
+      "before_audio": "sessions/signup_buggy/step_6_before.wav",
+      "after_audio": "cache/signup_buggy/after_O-B09.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B11",
+        "t_start": 13.02,
+        "t_end": 14.52,
+        "announced_text": "I agree to the terms, clickable",
+        "visible_text_or_description": "Custom checkbox div has no role or checked state.",
+        "issue_type": "missing_state",
+        "severity": "high",
+        "wcag_guess": "4.1.2",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 4,
+        "t": 13.02,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#terms",
+        "html": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\"><span class=\"box\"></span><span>I agree to the terms</span></div>",
+        "name": "I agree to the terms",
+        "role": "generic",
+        "visible_text": "I agree to the terms",
+        "announcement": "I agree to the terms, clickable"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.2: Name, Role, Value",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\">",
+              "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\" aria-labelledby=\"terms-label\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<span>I agree to the terms</span>",
+              "new_str": "<span id=\"terms-label\">I agree to the terms</span>"
+            },
+            {
+              "file": "app.js",
+              "old_str": "const toggle = () => terms.classList.toggle('on');",
+              "new_str": "const toggle = () => { terms.classList.toggle('on'); terms.setAttribute('aria-checked', terms.classList.contains('on') ? 'true' : 'false'); };"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "role=checkbox aria-checked=false",
+              "after click aria-checked false->true"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "label-content-name-mismatch": 1
+            },
+            "axe_after": {
+              "label-content-name-mismatch": 1
+            },
+            "after_announcement": "I agree to the terms, check box, not checked"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\">",
+            "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\" aria-labelledby=\"terms-label\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<span>I agree to the terms</span>",
+            "new_str": "<span id=\"terms-label\">I agree to the terms</span>"
+          },
+          {
+            "file": "app.js",
+            "old_str": "const toggle = () => terms.classList.toggle('on');",
+            "new_str": "const toggle = () => { terms.classList.toggle('on'); terms.setAttribute('aria-checked', terms.classList.contains('on') ? 'true' : 'false'); };"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "role=checkbox aria-checked=false",
+            "after click aria-checked false->true"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "label-content-name-mismatch": 1
+          },
+          "axe_after": {
+            "label-content-name-mismatch": 1
+          },
+          "after_announcement": "I agree to the terms, check box, not checked"
+        }
+      },
+      "bug_id": "B11",
+      "before_audio": "sessions/signup_buggy/step_4_before.wav",
+      "after_audio": "cache/signup_buggy/after_O-B11.wav"
+    }
+  ],
+  "rejected_unsupported": [],
+  "raw_finding_count": 4,
+  "cost": {
+    "total": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_s": 0,
+      "cost_usd": 0,
+      "cost_known": true,
+      "tavily_calls": 0
+    },
+    "by_stage": {},
+    "by_model": {},
+    "calls": [],
+    "tavily": []
+  }
+}

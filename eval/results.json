@@ -1,0 +1,164 @@
+{
+  "source": [
+    "oracle_stub"
+  ],
+  "perception_mode": [
+    "oracle_stub"
+  ],
+  "total_bugs": 12,
+  "axe_detected": 4,
+  "heard_detected": 12,
+  "fixes_verified": 12,
+  "rejected_unsupported": 0,
+  "cost": {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "latency_s": 0.0,
+    "cost_usd": 0.0
+  },
+  "by_model": {},
+  "bugs": [
+    {
+      "id": "B01",
+      "site": "shop",
+      "category": "missing_name",
+      "description": "Icon-only cart button has no accessible name (svg is aria-hidden, no label).",
+      "axe_detected": true,
+      "axe_rules": [
+        "button-name"
+      ],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B02",
+      "site": "shop",
+      "category": "missing_alt",
+      "description": "Hero image has no alt attribute.",
+      "axe_detected": true,
+      "axe_rules": [
+        "image-alt"
+      ],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B04",
+      "site": "shop",
+      "category": "vague_link",
+      "description": "Three links all read 'Learn more' with no product context.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B10",
+      "site": "shop",
+      "category": "repeated_control",
+      "description": "Five identical 'Edit' buttons with no indication of which cart item they edit.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B03",
+      "site": "signup",
+      "category": "missing_label",
+      "description": "Email input relies on placeholder only; no <label>.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B06",
+      "site": "signup",
+      "category": "error_not_announced",
+      "description": "Validation error text is injected without role=alert or aria-live.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "issue_type",
+      "fix_verified": true
+    },
+    {
+      "id": "B09",
+      "site": "signup",
+      "category": "label_in_name",
+      "description": "aria-label 'Continue' contradicts visible text 'Create account' (WCAG 2.5.3).",
+      "axe_detected": true,
+      "axe_rules": [
+        "label-content-name-mismatch"
+      ],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B11",
+      "site": "signup",
+      "category": "missing_state",
+      "description": "Custom checkbox div has no role or checked state.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B05",
+      "site": "dashboard",
+      "category": "div_button",
+      "description": "div acts as a button: no role=button, no native button semantics.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B07",
+      "site": "dashboard",
+      "category": "modal_dialog",
+      "description": "Modal has no role=dialog, no accessible name, and focus is not moved into it.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "issue_type",
+      "fix_verified": true
+    },
+    {
+      "id": "B08",
+      "site": "dashboard",
+      "category": "tab_widget",
+      "description": "Tab widget lacks tablist/tab/tabpanel roles and aria-selected.",
+      "axe_detected": false,
+      "axe_rules": [],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    },
+    {
+      "id": "B12",
+      "site": "dashboard",
+      "category": "heading_skip",
+      "description": "Heading level skips from h1 to h3.",
+      "axe_detected": true,
+      "axe_rules": [
+        "heading-order"
+      ],
+      "heard_detected": true,
+      "heard_matched_via": "selector",
+      "fix_verified": true
+    }
+  ],
+  "matching_rule": "Heard detected = a supported finding whose step element is the bug element (or ancestor/descendant) OR whose issue_type equals the bug category on the same site. axe detected = a violation node that is the bug element (or ancestor/descendant)."
+}

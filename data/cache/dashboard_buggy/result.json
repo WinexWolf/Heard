@@ -1,0 +1,534 @@
+{
+  "session_id": "dashboard_buggy",
+  "site": "dashboard",
+  "source": "oracle_stub",
+  "perception_mode": "oracle_stub",
+  "models": {
+    "perception": "",
+    "patch": "",
+    "escalation": ""
+  },
+  "generated_at": "2026-10-26T16:54:11",
+  "label": "simulated screen reader",
+  "findings": [
+    {
+      "finding": {
+        "id": "O-B05",
+        "t_start": 10.93,
+        "t_end": 12.43,
+        "announced_text": "Export CSV, clickable",
+        "visible_text_or_description": "div acts as a button: no role=button, no native button semantics.",
+        "issue_type": "div_button",
+        "severity": "high",
+        "wcag_guess": "4.1.2",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 4,
+        "t": 10.93,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#export",
+        "html": "<div class=\"btn\" id=\"export\" tabindex=\"0\">Export CSV</div>",
+        "name": "Export CSV",
+        "role": "generic",
+        "visible_text": "Export CSV",
+        "announcement": "Export CSV, clickable"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.2: Name, Role, Value",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"btn\" id=\"export\" tabindex=\"0\">Export CSV</div>",
+              "new_str": "<button type=\"button\" id=\"export\">Export CSV</button>"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "role=button tabIndex=0"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": "Export CSV, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"btn\" id=\"export\" tabindex=\"0\">Export CSV</div>",
+            "new_str": "<button type=\"button\" id=\"export\">Export CSV</button>"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "role=button tabIndex=0"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {
+            "heading-order": 1
+          },
+          "after_announcement": "Export CSV, button"
+        }
+      },
+      "bug_id": "B05",
+      "before_audio": "sessions/dashboard_buggy/step_4_before.wav",
+      "after_audio": "runs/dashboard_buggy/after_O-B05.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B07",
+        "t_start": 9.61,
+        "t_end": 11.11,
+        "announced_text": "",
+        "visible_text_or_description": "Modal has no role=dialog, no accessible name, and focus is not moved into it.",
+        "issue_type": "modal_dialog",
+        "severity": "high",
+        "wcag_guess": "4.1.2",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 3,
+        "t": 9.61,
+        "kind": "action",
+        "key": "Enter",
+        "selector": "#open-modal",
+        "html": "<button type=\"button\" id=\"open-modal\">Settings</button>",
+        "name": "Settings",
+        "role": "button",
+        "visible_text": "Settings",
+        "announcement": "",
+        "screen_change": "a modal dialog opened on screen; screen now also shows: Refresh interval / 1 minute / 5 minutes / Close",
+        "live_region": false,
+        "acted_on": "Settings, button",
+        "silent": true
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.2: Name, Role, Value",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\">",
+              "new_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"modal-title\">"
+            },
+            {
+              "file": "app.js",
+              "old_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; });",
+              "new_str": "const opener = document.getElementById('open-modal');\nopener.addEventListener('click', () => { modal.hidden = false; document.getElementById('close-modal').focus(); });\nmodal.addEventListener('keydown', e => { if (e.key === 'Escape') { modal.hidden = true; opener.focus(); } });"
+            },
+            {
+              "file": "app.js",
+              "old_str": "document.getElementById('close-modal').addEventListener('click', () => { modal.hidden = true; });",
+              "new_str": "document.getElementById('close-modal').addEventListener('click', () => { modal.hidden = true; opener.focus(); });"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "dialog name after opening = 'Settings'",
+              "after opening, focus inside dialog = True"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\">",
+            "new_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"modal-title\">"
+          },
+          {
+            "file": "app.js",
+            "old_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; });",
+            "new_str": "const opener = document.getElementById('open-modal');\nopener.addEventListener('click', () => { modal.hidden = false; document.getElementById('close-modal').focus(); });\nmodal.addEventListener('keydown', e => { if (e.key === 'Escape') { modal.hidden = true; opener.focus(); } });"
+          },
+          {
+            "file": "app.js",
+            "old_str": "document.getElementById('close-modal').addEventListener('click', () => { modal.hidden = true; });",
+            "new_str": "document.getElementById('close-modal').addEventListener('click', () => { modal.hidden = true; opener.focus(); });"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "dialog name after opening = 'Settings'",
+            "after opening, focus inside dialog = True"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {
+            "heading-order": 1
+          },
+          "after_announcement": ""
+        }
+      },
+      "bug_id": "B07",
+      "before_audio": null,
+      "after_audio": null
+    },
+    {
+      "finding": {
+        "id": "O-B08",
+        "t_start": 14.18,
+        "t_end": 15.68,
+        "announced_text": "Overview, clickable",
+        "visible_text_or_description": "Tab widget lacks tablist/tab/tabpanel roles and aria-selected.",
+        "issue_type": "tab_widget",
+        "severity": "high",
+        "wcag_guess": "4.1.2",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 5,
+        "t": 14.18,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "main > div.tabs:nth-of-type(2) > div.tab:nth-of-type(1)",
+        "html": "<div class=\"tab active\" tabindex=\"0\" data-panel=\"panel-overview\">Overview</div>",
+        "name": "Overview",
+        "role": "generic",
+        "visible_text": "Overview",
+        "announcement": "Overview, clickable"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.2: Name, Role, Value",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tabs\">",
+              "new_str": "<div class=\"tabs\" role=\"tablist\" aria-label=\"Dashboard sections\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab active\" tabindex=\"0\" data-panel=\"panel-overview\">",
+              "new_str": "<div class=\"tab active\" role=\"tab\" id=\"tab-overview\" aria-selected=\"true\" aria-controls=\"panel-overview\" tabindex=\"0\" data-panel=\"panel-overview\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\">",
+              "new_str": "<div class=\"tab\" role=\"tab\" id=\"tab-orders\" aria-selected=\"false\" aria-controls=\"panel-orders\" tabindex=\"0\" data-panel=\"panel-orders\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-users\">",
+              "new_str": "<div class=\"tab\" role=\"tab\" id=\"tab-users\" aria-selected=\"false\" aria-controls=\"panel-users\" tabindex=\"0\" data-panel=\"panel-users\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"panel\" id=\"panel-overview\">",
+              "new_str": "<div class=\"panel\" id=\"panel-overview\" role=\"tabpanel\" aria-labelledby=\"tab-overview\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"panel\" id=\"panel-orders\" hidden>",
+              "new_str": "<div class=\"panel\" id=\"panel-orders\" role=\"tabpanel\" aria-labelledby=\"tab-orders\" hidden>"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"panel\" id=\"panel-users\" hidden>",
+              "new_str": "<div class=\"panel\" id=\"panel-users\" role=\"tabpanel\" aria-labelledby=\"tab-users\" hidden>"
+            },
+            {
+              "file": "app.js",
+              "old_str": "tabs.forEach(x => x.classList.remove('active'));",
+              "new_str": "tabs.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected', 'false'); });"
+            },
+            {
+              "file": "app.js",
+              "old_str": "t.classList.add('active');",
+              "new_str": "t.classList.add('active'); t.setAttribute('aria-selected', 'true');"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "aria-selected ['true', 'false', 'false']",
+              "after click ['false', 'true', 'false']"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tabs\">",
+            "new_str": "<div class=\"tabs\" role=\"tablist\" aria-label=\"Dashboard sections\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab active\" tabindex=\"0\" data-panel=\"panel-overview\">",
+            "new_str": "<div class=\"tab active\" role=\"tab\" id=\"tab-overview\" aria-selected=\"true\" aria-controls=\"panel-overview\" tabindex=\"0\" data-panel=\"panel-overview\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\">",
+            "new_str": "<div class=\"tab\" role=\"tab\" id=\"tab-orders\" aria-selected=\"false\" aria-controls=\"panel-orders\" tabindex=\"0\" data-panel=\"panel-orders\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-users\">",
+            "new_str": "<div class=\"tab\" role=\"tab\" id=\"tab-users\" aria-selected=\"false\" aria-controls=\"panel-users\" tabindex=\"0\" data-panel=\"panel-users\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"panel\" id=\"panel-overview\">",
+            "new_str": "<div class=\"panel\" id=\"panel-overview\" role=\"tabpanel\" aria-labelledby=\"tab-overview\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"panel\" id=\"panel-orders\" hidden>",
+            "new_str": "<div class=\"panel\" id=\"panel-orders\" role=\"tabpanel\" aria-labelledby=\"tab-orders\" hidden>"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"panel\" id=\"panel-users\" hidden>",
+            "new_str": "<div class=\"panel\" id=\"panel-users\" role=\"tabpanel\" aria-labelledby=\"tab-users\" hidden>"
+          },
+          {
+            "file": "app.js",
+            "old_str": "tabs.forEach(x => x.classList.remove('active'));",
+            "new_str": "tabs.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected', 'false'); });"
+          },
+          {
+            "file": "app.js",
+            "old_str": "t.classList.add('active');",
+            "new_str": "t.classList.add('active'); t.setAttribute('aria-selected', 'true');"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "aria-selected ['true', 'false', 'false']",
+            "after click ['false', 'true', 'false']"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {
+            "heading-order": 1
+          },
+          "after_announcement": ""
+        }
+      },
+      "bug_id": "B08",
+      "before_audio": "sessions/dashboard_buggy/step_5_before.wav",
+      "after_audio": null
+    },
+    {
+      "finding": {
+        "id": "O-B12",
+        "t_start": 4.08,
+        "t_end": 5.58,
+        "announced_text": "Overview, heading level 3",
+        "visible_text_or_description": "Heading level skips from h1 to h3.",
+        "issue_type": "heading_skip",
+        "severity": "high",
+        "wcag_guess": "1.3.1",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 1,
+        "t": 4.08,
+        "kind": "browse",
+        "key": "Down",
+        "selector": "#overview-heading",
+        "html": "<h3 id=\"overview-heading\">Overview</h3>",
+        "name": "Overview",
+        "role": "heading",
+        "visible_text": "Overview",
+        "announcement": "Overview, heading level 3"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 1.3.1: Info and Relationships",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<h3 id=\"overview-heading\">",
+              "new_str": "<h2 id=\"overview-heading\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "Overview</h3>",
+              "new_str": "Overview</h2>"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "heading levels [1, 2]"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {},
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<h3 id=\"overview-heading\">",
+            "new_str": "<h2 id=\"overview-heading\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "Overview</h3>",
+            "new_str": "Overview</h2>"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "heading levels [1, 2]"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {},
+          "after_announcement": ""
+        }
+      },
+      "bug_id": "B12",
+      "before_audio": "sessions/dashboard_buggy/step_1_before.wav",
+      "after_audio": null
+    }
+  ],
+  "rejected_unsupported": [],
+  "raw_finding_count": 4,
+  "cost": {
+    "total": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_s": 0,
+      "cost_usd": 0,
+      "cost_known": true,
+      "tavily_calls": 0
+    },
+    "by_stage": {},
+    "by_model": {},
+    "calls": [],
+    "tavily": []
+  }
+}

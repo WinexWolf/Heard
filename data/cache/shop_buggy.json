@@ -1,0 +1,492 @@
+{
+  "session_id": "shop_buggy",
+  "site": "shop",
+  "source": "oracle_stub",
+  "perception_mode": "oracle_stub",
+  "models": {
+    "perception": "",
+    "patch": "",
+    "escalation": ""
+  },
+  "generated_at": "2026-10-26T16:54:23",
+  "label": "simulated screen reader",
+  "findings": [
+    {
+      "finding": {
+        "id": "O-B01",
+        "t_start": 21.53,
+        "t_end": 23.03,
+        "announced_text": "button",
+        "visible_text_or_description": "Icon-only cart button has no accessible name (svg is aria-hidden, no label).",
+        "issue_type": "missing_name",
+        "severity": "high",
+        "wcag_guess": "4.1.2",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 7,
+        "t": 21.53,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#cart-btn",
+        "html": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"></path><circle cx=\"9\" cy=\"19\" r=\"1.",
+        "name": "",
+        "role": "button",
+        "visible_text": "",
+        "announcement": "button"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 4.1.2: Name, Role, Value",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\">",
+              "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Open cart, 5 items\">"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "accessible name = 'Open cart, 5 items'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "image-alt": 1
+            },
+            "after_announcement": "Open cart, 5 items, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\">",
+            "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Open cart, 5 items\">"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "accessible name = 'Open cart, 5 items'"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "axe_after": {
+            "image-alt": 1
+          },
+          "after_announcement": "Open cart, 5 items, button"
+        }
+      },
+      "bug_id": "B01",
+      "before_audio": "sessions/shop_buggy/step_7_before.wav",
+      "after_audio": "cache/shop_buggy/after_O-B01.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B02",
+        "t_start": 3.86,
+        "t_end": 5.359999999999999,
+        "announced_text": "graphic",
+        "visible_text_or_description": "Hero image has no alt attribute.",
+        "issue_type": "missing_alt",
+        "severity": "high",
+        "wcag_guess": "1.1.1",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 1,
+        "t": 3.86,
+        "kind": "browse",
+        "key": "Down",
+        "selector": "main > img.hero",
+        "html": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
+        "name": "",
+        "role": "image",
+        "visible_text": "",
+        "announcement": "graphic"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 1.1.1: Non-text Content",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
+              "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale banner: pixel keyboards\">"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "alt = 'Spring sale banner: pixel keyboards'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "button-name": 1
+            },
+            "after_announcement": "Spring sale banner: pixel keyboards, graphic"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
+            "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale banner: pixel keyboards\">"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "alt = 'Spring sale banner: pixel keyboards'"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "axe_after": {
+            "button-name": 1
+          },
+          "after_announcement": "Spring sale banner: pixel keyboards, graphic"
+        }
+      },
+      "bug_id": "B02",
+      "before_audio": "sessions/shop_buggy/step_1_before.wav",
+      "after_audio": "cache/shop_buggy/after_O-B02.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B04",
+        "t_start": 23.18,
+        "t_end": 24.68,
+        "announced_text": "Learn more, link",
+        "visible_text_or_description": "Three links all read 'Learn more' with no product context.",
+        "issue_type": "vague_link",
+        "severity": "high",
+        "wcag_guess": "2.4.4",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 8,
+        "t": 23.18,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "main > ul.products:nth-of-type(1) > li.product:nth-of-type(1) > a.learn-more",
+        "html": "<a class=\"learn-more\" href=\"#pixel-60\">Learn more</a>",
+        "name": "Learn more",
+        "role": "link",
+        "visible_text": "Learn more",
+        "announcement": "Learn more, link"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 2.4.4: Link Purpose (In Context)",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<a class=\"learn-more\" href=\"#pixel-60\">Learn more</a>",
+              "new_str": "<a class=\"learn-more\" href=\"#pixel-60\">Learn more<span class=\"sr-only\"> about Pixel 60</span></a>"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<a class=\"learn-more\" href=\"#pixel-75\">Learn more</a>",
+              "new_str": "<a class=\"learn-more\" href=\"#pixel-75\">Learn more<span class=\"sr-only\"> about Pixel 75</span></a>"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more</a>",
+              "new_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more<span class=\"sr-only\"> about Pixel TKL</span></a>"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "names = ['learn more about pixel 60', 'learn more about pixel 75', 'learn more about pixel tkl']"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "after_announcement": "Learn more about Pixel 60, link"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<a class=\"learn-more\" href=\"#pixel-60\">Learn more</a>",
+            "new_str": "<a class=\"learn-more\" href=\"#pixel-60\">Learn more<span class=\"sr-only\"> about Pixel 60</span></a>"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<a class=\"learn-more\" href=\"#pixel-75\">Learn more</a>",
+            "new_str": "<a class=\"learn-more\" href=\"#pixel-75\">Learn more<span class=\"sr-only\"> about Pixel 75</span></a>"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more</a>",
+            "new_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more<span class=\"sr-only\"> about Pixel TKL</span></a>"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "names = ['learn more about pixel 60', 'learn more about pixel 75', 'learn more about pixel tkl']"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "axe_after": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "after_announcement": "Learn more about Pixel 60, link"
+        }
+      },
+      "bug_id": "B04",
+      "before_audio": "sessions/shop_buggy/step_8_before.wav",
+      "after_audio": "cache/shop_buggy/after_O-B04.wav"
+    },
+    {
+      "finding": {
+        "id": "O-B10",
+        "t_start": 40.09,
+        "t_end": 41.59,
+        "announced_text": "Edit, button",
+        "visible_text_or_description": "Five identical 'Edit' buttons with no indication of which cart item they edit.",
+        "issue_type": "repeated_control",
+        "severity": "high",
+        "wcag_guess": "2.4.6",
+        "evidence": "oracle stub (reference mapping)"
+      },
+      "step": {
+        "i": 14,
+        "t": 40.09,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "main > ul.cart:nth-of-type(2) > li.cart-item:nth-of-type(1) > button.edit-btn",
+        "html": "<button type=\"button\" class=\"edit-btn\">Edit</button>",
+        "name": "Edit",
+        "role": "button",
+        "visible_text": "Edit",
+        "announcement": "Edit, button"
+      },
+      "citations": [
+        {
+          "title": "Understanding SC 2.4.6: Headings and Labels",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html"
+        }
+      ],
+      "query": "static",
+      "attempts": [
+        {
+          "model": "oracle_stub",
+          "role": "oracle",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">",
+              "new_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">",
+              "new_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">",
+              "new_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">",
+              "new_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">",
+              "new_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">"
+            }
+          ],
+          "rationale": "Reference fix (human-written).",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "names = ['edit pixel 60', 'edit pixel 75', 'edit keycap set', 'edit usb-c cable', 'edit switch pack']"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "after_announcement": "Edit Pixel 60, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "oracle_stub",
+      "final": {
+        "model": "oracle_stub",
+        "role": "oracle",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">",
+            "new_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">",
+            "new_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">",
+            "new_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">",
+            "new_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">",
+            "new_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">"
+          }
+        ],
+        "rationale": "Reference fix (human-written).",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "names = ['edit pixel 60', 'edit pixel 75', 'edit keycap set', 'edit usb-c cable', 'edit switch pack']"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "axe_after": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "after_announcement": "Edit Pixel 60, button"
+        }
+      },
+      "bug_id": "B10",
+      "before_audio": "sessions/shop_buggy/step_14_before.wav",
+      "after_audio": "cache/shop_buggy/after_O-B10.wav"
+    }
+  ],
+  "rejected_unsupported": [],
+  "raw_finding_count": 4,
+  "cost": {
+    "total": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_s": 0,
+      "cost_usd": 0,
+      "cost_known": true,
+      "tavily_calls": 0
+    },
+    "by_stage": {},
+    "by_model": {},
+    "calls": [],
+    "tavily": []
+  }
+}
