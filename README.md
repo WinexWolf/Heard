@@ -75,6 +75,29 @@ make run                              # "Run live" is now enabled in the UI
 
 Other commands: `uv run scripts/generate_sessions.py` (regenerate the simulated sessions), `uv run scripts/build_demo_sites.py` (regenerate the reference `fixed/` sites), `make test`.
 
+## Heard on every push (CLI)
+
+`heard` checks any running web app for accessibility regressions. The target repo needs nothing installed: the browser already builds an accessibility tree for every page.
+
+```bash
+uvx --from git+https://github.com/WinexWolf/Heard heard init      # writes heard.toml: url, optional start command, pages, flows
+uvx --from git+https://github.com/WinexWolf/Heard heard snapshot  # records what a screen-reader user hears -> heard.snapshot.json (commit it)
+uvx --from git+https://github.com/WinexWolf/Heard heard check     # re-records, diffs, audits only what changed; exit 1 on regressions
+```
+
+How `check` keeps model cost down while still running on every push:
+
+1. **Record (no model):** Heard drives each page in Chromium like a screen-reader user: a browse pass over headings and images, then Tab through every focusable element. It never clicks on its own; Enter, Space and typing happen only in `flows` you declare. Each step's announcement is built from the accessibility tree. This takes a few seconds per page.
+2. **Diff:** the new speech is compared with the baseline snapshot from the base commit (`--base`, default: the PR's target branch in CI, else `HEAD`). A change anywhere in the code that alters what users hear shows up, even on pages the change didn't touch. Selector or markup changes that sound the same are ignored.
+3. **Audit only the diff:** changed steps, with two steps of context on each side, go to `MODEL_PERCEPTION`. The same evidence check drops findings whose quote was never heard. Identical diffs are answered from `.heard/cache.json`, so a push that changes nothing users hear makes zero model calls.
+4. **Decide:** the check exits 1 on new issues at or above `fail_on`. It writes `.heard/report.md` (also to the GitHub step summary) and `.heard/report.json`. Without a model key, it still reports the speech diff and exits 0 as "unaudited".
+
+`examples/github-action.yml` runs this on every push and PR, comments the report on PRs, and uploads `.heard/`. Because the snapshot is committed, a PR's diff of `heard.snapshot.json` shows reviewers exactly what screen-reader users will hear differently.
+
+Measured on the demo sites, with the shop and signup served as one app and a fixed → buggy "push": the diff surfaced the unlabeled cart button, missing alt text, the three "Learn more" links, five identical "Edit" buttons, the checkbox that lost its state, "Continue" instead of "Create account", and the validation error that went silent. It took about 5 s with no model calls (`backend/tests/test_cli.py`). The placeholder-only email field (B03) sounds the same either way, so the diff can't hear it.
+
+Not built yet: `heard fix` (patching your source against the live dev server), and a source locator for component frameworks.
+
 ## Demo sites and seeded bugs
 
 Three small static sites (`demo_sites/{shop,signup,dashboard}/{buggy,fixed}`), 12 seeded bugs recorded in `data/bugs/*.json` (B01 to B12 as in the spec). Whether axe catches each bug is **measured, not asserted**. One instructive case: **B03** (input with a placeholder but no label) is *not* audible in the simulated session, because Chromium computes the accessible name from the placeholder, so the screen reader says "Email address, edit text". Heard can only detect it by reasoning about on-screen structure, which is exactly the kind of result the benchmark should show honestly.

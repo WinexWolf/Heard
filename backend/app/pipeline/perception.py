@@ -85,20 +85,40 @@ def evidence_check(findings: list[Finding], speech_log: list[dict], steps: list[
     return [f for f, _ in supported], [{"finding": f.model_dump(), "reason": r} for f, r in rejected]
 
 
-def run_perception(llm, session_dir: Path, caps: dict):
-    steps = json.loads((session_dir / "steps.json").read_text())
-    log = json.loads((session_dir / "speech_log.json").read_text())
-    mode = caps.get("PERCEPTION_MODE", "text_only_log")
-    msgs = build_messages(session_dir, steps, mode, caps)
+def ask_findings(llm, msgs: list[dict]) -> FindingList:
+    """One perception call, with one retry if the reply is not valid findings JSON."""
     err = ""
     for attempt in range(2):
         m = msgs if not err else msgs + [{"role": "user", "content": f"Your previous reply was invalid ({err}). Return ONLY valid JSON matching the schema."}]
         raw = llm.chat("perception", "perception", m, max_tokens=4096)
         try:
-            fl = parse_findings(raw); break
+            return parse_findings(raw)
         except (ValueError, ValidationError, json.JSONDecodeError) as e:
             err = str(e)[:200]
-    else:
-        raise RuntimeError(f"perception returned invalid JSON twice: {err}")
+    raise RuntimeError(f"perception returned invalid JSON twice: {err}")
+
+
+def run_perception(llm, session_dir: Path, caps: dict):
+    steps = json.loads((session_dir / "steps.json").read_text())
+    log = json.loads((session_dir / "speech_log.json").read_text())
+    mode = caps.get("PERCEPTION_MODE", "text_only_log")
+    fl = ask_findings(llm, build_messages(session_dir, steps, mode, caps))
     supported, rejected = evidence_check(fl.findings, log, steps)
     return {"mode": mode, "supported": supported, "rejected": rejected, "raw_count": len(fl.findings)}
+
+
+def changes_prompt(steps: list[dict], notes: dict[int, str], context: int = 2) -> str:
+    """Step table limited to changed steps (marked CHANGED with what changed) plus `context` neighbours each side."""
+    keep = sorted({j for i in notes for j in range(max(0, i - context), min(len(steps), i + context + 1))})
+    rows = [step_table([steps[j]]) + (f' CHANGED {notes[j]}' if j in notes else "") for j in keep]
+    return ("A code change altered what a screen-reader user hears on this page. Steps marked CHANGED differ from the last "
+            "accepted version; the other steps are unchanged context. Report only issues in, or caused by, the CHANGED steps.\n\n"
+            "Step-by-step (t = step number):\n" + "\n".join(rows) + "\n\nReturn the JSON findings.")
+
+
+def run_on_changes(llm, steps: list[dict], notes: dict[int, str]):
+    """Audit only what a push changed. `notes` maps a step index to how it changed (see speechdiff.change_notes)."""
+    fl = ask_findings(llm, [{"role": "system", "content": SYSTEM}, {"role": "user", "content": changes_prompt(steps, notes)}])
+    log = [{"t": s["t"], "text": s["announcement"]} for s in steps if s["announcement"]]
+    supported, rejected = evidence_check(fl.findings, log, steps)
+    return {"supported": supported, "rejected": rejected, "raw_count": len(fl.findings)}

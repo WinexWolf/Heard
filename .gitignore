@@ -11,3 +11,4 @@ data/sessions/*/frames/
 .DS_Store
 .history
 SUBMISSION.md
+.heard/

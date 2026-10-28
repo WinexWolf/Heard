@@ -1,0 +1,31 @@
+# Copy to .github/workflows/heard.yml in your app's repo.
+# Every push and PR is re-recorded (no model); only announcements that changed are sent to the model.
+name: Heard
+on: [push, pull_request]
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, pull-requests: write }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }                  # the baseline snapshot is read from the base commit
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci                               # heard.toml `start` (e.g. npm run dev) launches the app
+      - uses: astral-sh/setup-uv@v6
+      - run: uvx --from git+https://github.com/WinexWolf/Heard playwright install --with-deps chromium
+      - name: Heard check
+        run: >
+          uvx --from git+https://github.com/WinexWolf/Heard heard check
+          --base ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        env:
+          NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
+          NEBIUS_BASE_URL: https://api.tokenfactory.nebius.com/v1/
+          MODEL_PERCEPTION: ${{ vars.HEARD_MODEL_PERCEPTION }}
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: always() && github.event_name == 'pull_request'
+        with: { header: heard, path: .heard/report.md }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: heard-report, path: .heard/ }
