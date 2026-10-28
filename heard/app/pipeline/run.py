@@ -69,6 +69,7 @@ def analyze_live(session_id: str, emit: Emit = lambda e: None, out_dir: Path | N
     results = []
     for f in p["supported"]:
         step = nearest_step(f, steps)
+        f.wcag_guess = citation.criterion(f.issue_type, f.wcag_guess)
         q = citation.build_query(f.issue_type, f.wcag_guess)
         try:
             cites, snippets = citation.search(tracker, s.tavily_key, q)

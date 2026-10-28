@@ -7,7 +7,8 @@
   heard fix                  patch the source for those regressions; keep only fixes verified on the running app
 
 Every push is re-recorded (cheap, deterministic, no model). The model only sees steps whose announcements changed,
-and identical diffs are answered from .heard/cache.json, so a push that changes nothing users hear costs no tokens.
+and identical diffs are answered from .heard/cache.json (keyed by diff, model and prompt version; entries expire after
+30 days), so a push that changes nothing users hear costs no tokens.
 """
 from __future__ import annotations
 import argparse, hashlib, json, os, signal, subprocess, sys, time, tomllib, webbrowser
@@ -16,7 +17,7 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 from . import driver, report, speechdiff
-from .pipeline import perception
+from .pipeline import citation, perception
 
 SEVERITY = ["low", "medium", "high", "critical"]
 DEFAULTS = {"pages": ["/"], "flows": {}, "snapshot": "heard.snapshot.json", "fail_on": "medium", "start_timeout": 90, "out_dir": ".heard",
@@ -105,19 +106,24 @@ def make_llm(roles: tuple[str, ...] = ("perception",)):
 def run_check(cfg: dict, base: dict | None, head: dict, llm=None, cache_path: Path | None = None) -> dict:
     """Diff head against base, audit changed steps (model calls only on cache misses), decide pass/fail."""
     changes = speechdiff.diff(base, head)
-    cache = json.loads(cache_path.read_text()) if cache_path and cache_path.exists() else {}
+    now = time.time()
+    fresh = lambda e: isinstance(e, dict) and now - e.get("at", 0) < citation.TTL
+    cache = {h: e for h, e in (json.loads(cache_path.read_text()) if cache_path and cache_path.exists() else {}).items() if fresh(e)}
+    # A different model or system prompt must not reuse old findings.
+    model = getattr(getattr(llm, "s", None), "models", {}).get("perception", "")
+    salt = f"{model}|{hashlib.sha256(perception.SYSTEM.encode()).hexdigest()[:8]}|"
     findings, rejected, audited, calls = [], [], True, 0
     for key, ch in changes.items():
         if not ch["notes"]:
             continue
         steps = head["pages"][key]
         prompt = perception.changes_prompt(steps, ch["notes"])
-        h = hashlib.sha256(prompt.encode()).hexdigest()[:16]
+        h = hashlib.sha256((salt + prompt).encode()).hexdigest()[:16]
         if h not in cache:
             if llm is None:
                 audited = False; continue
             res = perception.run_on_changes(llm, steps, ch["notes"]); calls += 1
-            cache[h] = {"supported": [f.model_dump() for f in res["supported"]], "rejected": res["rejected"]}
+            cache[h] = {"at": now, "supported": [f.model_dump() for f in res["supported"]], "rejected": res["rejected"]}
         findings += [{"page": key, "step": steps[min(int(f["t_start"]), len(steps) - 1)]["announcement"], **f} for f in cache[h]["supported"]]
         rejected += [{"page": key, **r} for r in cache[h]["rejected"]]
     if cache_path:
@@ -219,12 +225,15 @@ def cmd_fix(a) -> int:
     s = get_settings()
     models = {r: (m if m and not m.startswith("<") else None) for r, m in s.models.items()}
     tavily = s.tavily_key if s.tavily_key and not s.tavily_key.startswith("<") else None
+    from .pipeline import citation
+    citation.load_cache(out / "tavily-cache.json")
     with app_running(cfg), sync_playwright() as pw:
         br = a11y.launch_chromium(pw)
         try:
             done = fixer.run_fix(cfg, rep, snap, llm, models, Path.cwd(), br, a.all, not a.dry_run, tavily)
         finally:
             br.close()
+            citation.save_cache(out / "tavily-cache.json")
     rep["fix_cost"] = llm.tracker.summary()["total"]
     (out / "report.json").write_text(json.dumps(rep, indent=1)); report.write(rep, out / "report.html")
     (out / "fixes").mkdir(exist_ok=True)

@@ -151,6 +151,7 @@ def run_fix(cfg: dict, rep: dict, snap: dict, llm, models: dict, root: Path, bro
     for f in targets:
         steps = snap["pages"][f["page"]]
         step = steps[min(int(f["t_start"]), len(steps) - 1)]
+        f["wcag_guess"] = citation.criterion(f["issue_type"], f["wcag_guess"])
         snippets = []
         if tavily_key:
             try:

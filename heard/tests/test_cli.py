@@ -101,3 +101,20 @@ def test_report_page_renders_from_file_and_is_accessible(snaps, tmp_path):
             v = pg.evaluate("axe.run().then(r => r.violations.map(v => v.id + ': ' + v.help))")
             assert v == [], f"report {theme}: {v}"
         b.close()
+
+
+def test_audit_cache_is_keyed_by_model_and_prompt_and_expires(snaps, tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from heard.app.pipeline import perception
+    empty = ['{"findings": []}'] * 3
+    def llm(model):
+        f = FakeLLM({"perception": list(empty)}); f.s = SimpleNamespace(models={"perception": model}); return f
+    cache = tmp_path / "cache.json"
+    assert cli.run_check(CFG, snaps["fixed"], snaps["buggy"], llm("omni-a"), cache)["model_calls"] == 3
+    assert cli.run_check(CFG, snaps["fixed"], snaps["buggy"], llm("omni-a"), cache)["model_calls"] == 0     # same model: cached
+    assert cli.run_check(CFG, snaps["fixed"], snaps["buggy"], llm("omni-b"), cache)["model_calls"] == 3     # new model: re-audit
+    monkeypatch.setattr(perception, "SYSTEM", perception.SYSTEM + "\nBe stricter.")
+    assert cli.run_check(CFG, snaps["fixed"], snaps["buggy"], llm("omni-b"), cache)["model_calls"] == 3     # new prompt: re-audit
+    stale = {h: {**e, "at": 0} for h, e in json.loads(cache.read_text()).items()}
+    cache.write_text(json.dumps(stale))
+    assert cli.run_check(CFG, snaps["fixed"], snaps["buggy"], llm("omni-b"), cache)["model_calls"] == 3     # expired: re-audit

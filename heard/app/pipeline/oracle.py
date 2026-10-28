@@ -9,6 +9,7 @@ import importlib.util, json
 from pathlib import Path
 from ..config import ROOT
 from ..schemas import Edit, Finding
+from .citation import CRITERION
 
 _spec = importlib.util.spec_from_file_location("build_demo_sites", ROOT / "scripts" / "build_demo_sites.py")
 _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)  # type: ignore
@@ -36,9 +37,7 @@ STEP_FOR = {
     "B08": lambda s: s["announcement"] == "Overview, clickable",
     "B12": lambda s: s["announcement"].startswith("Overview, heading level 3"),
 }
-WCAG = {"missing_name": "4.1.2", "missing_alt": "1.1.1", "missing_label": "1.3.1", "vague_link": "2.4.4",
-        "repeated_control": "2.4.6", "error_not_announced": "4.1.3", "label_in_name": "2.5.3",
-        "missing_state": "4.1.2", "div_button": "4.1.2", "modal_dialog": "4.1.2", "tab_widget": "4.1.2", "heading_skip": "1.3.1"}
+WCAG = CRITERION   # shared with the live pipeline (citation.py)
 STATIC_CITATIONS = {
     "4.1.2": ("Understanding SC 4.1.2: Name, Role, Value", "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"),
     "1.1.1": ("Understanding SC 1.1.1: Non-text Content", "https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html"),
