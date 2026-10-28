@@ -1,7 +1,7 @@
 """heard CLI: speech snapshots, diffs, change-only audits, the token cache and the pass/fail decision."""
 import json, shutil
 import pytest
-from backend.app import a11y, cli, driver, speechdiff
+from heard.app import a11y, cli, driver, speechdiff
 from .conftest import FakeLLM, ROOT
 
 FLOWS = {"signup-submit": {"page": "/signup/", "steps": ["tab", "tab", "tab", "tab", "space", "tab", "enter"]}}
@@ -80,3 +80,24 @@ def test_markdown_report_lists_regressions_and_speech_changes(snaps):
     assert md.startswith("## ❌ Heard: 1 accessibility regression(s)")
     assert "| `/` | “button” | missing name: cart icon | high | 4.1.2 |" in md
     assert "“Open cart, 5 items, button" in md
+
+
+def test_report_page_renders_from_file_and_is_accessible(snaps, tmp_path):
+    from playwright.sync_api import sync_playwright
+    from heard.app import report
+    head = snaps["buggy"]; cart = next(s["i"] for s in head["pages"]["/"] if s["announcement"] == "button")
+    f = finding(cart, "button"); f["visible_text_or_description"] = "cart icon </script><b>not markup</b>"   # must stay inert data
+    llm = FakeLLM({"perception": [json.dumps({"findings": [f]}), '{"findings": []}', '{"findings": []}']})
+    page_file = report.write({**cli.run_check(CFG, snaps["fixed"], head, llm), "base": "origin/main"}, tmp_path / "report.html")
+    with sync_playwright() as pw:
+        b = pw.chromium.launch(**a11y.chromium_launch_kwargs()); pg = b.new_page()
+        pg.goto(page_file.as_uri())
+        assert pg.get_by_role("heading", level=1).inner_text() == "1 accessibility regression"
+        assert pg.get_by_text("cart icon </script><b>not markup</b>").is_visible()
+        assert pg.get_by_role("region", name="/signup/").is_visible()
+        pg.add_script_tag(path=str(a11y.AXE_JS))
+        for theme in ["Light", "Dark"]:
+            pg.get_by_role("group", name="Appearance").get_by_role("button", name=theme).click()
+            v = pg.evaluate("axe.run().then(r => r.violations.map(v => v.id + ': ' + v.help))")
+            assert v == [], f"report {theme}: {v}"
+        b.close()

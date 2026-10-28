@@ -6,7 +6,7 @@ Enter/Space/typing only happen inside flows the project declares, so a scan cann
 """
 from __future__ import annotations
 import time
-from playwright.sync_api import Page, sync_playwright
+from playwright.sync_api import Browser, Page, sync_playwright
 from . import a11y
 
 KEYS = {"tab": "Tab", "shift+tab": "Shift+Tab", "enter": "Enter", "space": " ", "escape": "Escape"}
@@ -100,18 +100,24 @@ def run_flow(page: Page, url: str, steps: list) -> list[dict]:
     return r.steps
 
 
-def snapshot(base_url: str, pages: list[str], flows: dict[str, dict] | None = None) -> dict:
-    """Speech snapshot of a running app: {"pages": {"/path": steps, "flow:name": steps}}."""
+def snapshot(base_url: str, pages: list[str], flows: dict[str, dict] | None = None, browser: Browser | None = None) -> dict:
+    """Speech snapshot of a running app: {"pages": {"/path": steps, "flow:name": steps}}. Reuses `browser` if given."""
+    if browser is None:
+        with sync_playwright() as pw:
+            br = a11y.launch_chromium(pw)
+            try:
+                return snapshot(base_url, pages, flows, br)
+            finally:
+                br.close()
     base = base_url.rstrip("/")
     out: dict[str, list[dict]] = {}
-    with sync_playwright() as pw:
-        br = pw.chromium.launch(**a11y.chromium_launch_kwargs())
-        try:
-            page = br.new_context(viewport={"width": 1280, "height": 800}).new_page()
-            for path in pages:
-                out[path] = scan_page(page, base + path)
-            for name, f in (flows or {}).items():
-                out[f"flow:{name}"] = run_flow(page, base + f.get("page", "/"), f.get("steps", []))
-        finally:
-            br.close()
+    ctx = browser.new_context(viewport={"width": 1280, "height": 800})
+    try:
+        page = ctx.new_page()
+        for path in pages:
+            out[path] = scan_page(page, base + path)
+        for name, f in (flows or {}).items():
+            out[f"flow:{name}"] = run_flow(page, base + f.get("page", "/"), f.get("steps", []))
+    finally:
+        ctx.close()
     return {"version": 1, "url": base, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "pages": out}

@@ -1,12 +1,13 @@
 """Browser helpers shared by the session generator, verifier and eval: launching Chromium,
 serving a site directory, and reading accessible name/role from the CDP accessibility tree."""
 from __future__ import annotations
-import functools, glob, re, http.server, os, shutil, socketserver, subprocess, threading
+import functools, glob, re, http.server, os, shutil, socketserver, subprocess, sys, threading
 from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 AXE_JS = ROOT / "scripts" / "node_modules" / "axe-core" / "axe.min.js"
+AXE_CDN = "https://cdn.jsdelivr.net/npm/axe-core@4.14.0/axe.min.js"   # same version, for installs without scripts/node_modules
 
 ROLE_WORDS = {"img": "graphic", "image": "graphic", "textbox": "edit text", "checkbox": "check box", "combobox": "combo box",
               "generic": "clickable", "StaticText": "text", "link": "link", "button": "button",
@@ -37,6 +38,18 @@ def chromium_launch_kwargs() -> dict:
     return kw
 
 
+def launch_chromium(pw):
+    """Launch Chromium, installing Playwright's build on first use (fresh `npx heard` / `uvx heard` machines)."""
+    try:
+        return pw.chromium.launch(**chromium_launch_kwargs())
+    except Exception as e:
+        if "Executable doesn't exist" not in str(e):
+            raise
+        print("heard: installing Chromium for Playwright (first run only)...", file=sys.stderr)
+        subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+        return pw.chromium.launch(**chromium_launch_kwargs())
+
+
 @contextmanager
 def serve_dir(directory: Path):
     """Serve a static directory on a free localhost port; yields the base URL."""
@@ -52,6 +65,11 @@ def serve_dir(directory: Path):
         yield f"http://127.0.0.1:{srv.server_address[1]}/"
     finally:
         srv.shutdown(); srv.server_close()
+
+
+def add_axe(page) -> None:
+    if AXE_JS.exists(): page.add_script_tag(path=str(AXE_JS))
+    else: page.add_script_tag(url=AXE_CDN)
 
 
 def ax_info(page, handle) -> dict:

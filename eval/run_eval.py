@@ -7,8 +7,8 @@ from collections import defaultdict
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from playwright.sync_api import sync_playwright
-from backend.app import a11y
-from backend.app.config import DATA, ROOT
+from heard.app import a11y
+from heard.app.config import DATA, ROOT
 
 SITES = ["shop", "signup", "dashboard"]
 REL_JS = """([targets, bugSel]) => {

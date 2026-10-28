@@ -1,0 +1,13 @@
+{
+  "name": "heard",
+  "version": "0.1.0",
+  "description": "Catch accessibility regressions on every push by listening to your app the way a screen-reader user does.",
+  "keywords": ["accessibility", "a11y", "screen-reader", "wcag", "ci", "playwright", "regression"],
+  "license": "MIT",
+  "homepage": "https://github.com/WinexWolf/Heard#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/WinexWolf/Heard.git", "directory": "npm" },
+  "bugs": "https://github.com/WinexWolf/Heard/issues",
+  "bin": { "heard": "bin/heard.js" },
+  "files": ["bin"],
+  "engines": { "node": ">=18" }
+}

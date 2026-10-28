@@ -14,10 +14,10 @@ jobs:
         with: { node-version: 22 }
       - run: npm ci                               # heard.toml `start` (e.g. npm run dev) launches the app
       - uses: astral-sh/setup-uv@v6
-      - run: uvx --from git+https://github.com/WinexWolf/Heard playwright install --with-deps chromium
+      - run: uvx --from heard playwright install --with-deps chromium   # system libraries for Chromium
       - name: Heard check
         run: >
-          uvx --from git+https://github.com/WinexWolf/Heard heard check
+          uvx heard check
           --base ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
         env:
           NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}

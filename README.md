@@ -41,8 +41,8 @@ flowchart LR
 | Patch | Nemotron 3 Super (`MODEL_PATCH`) | Needs precise structured edits to source files; more capable than Nano. |
 | Escalation | Nemotron 3 Ultra (`MODEL_ESCALATION`) | Used only when Super fails verification twice. |
 
-- **Nebius Token Factory**: all three models are called at runtime through its OpenAI-compatible API (`backend/app/llm.py`, `NEBIUS_BASE_URL`). Model IDs are never hardcoded; run `scripts/probe_models.py` to list the live Nemotron IDs.
-- **Tavily**: real runtime search in the main pipeline (`backend/app/pipeline/citation.py`).
+- **Nebius Token Factory**: all three models are called at runtime through its OpenAI-compatible API (`heard/app/llm.py`, `NEBIUS_BASE_URL`). Model IDs are never hardcoded; run `scripts/probe_models.py` to list the live Nemotron IDs.
+- **Tavily**: real runtime search in the main pipeline (`heard/app/pipeline/citation.py`).
 - **Other Nebius services**: Nebius Serverless (container endpoint) is the documented hosting target; no other Nebius service is used.
 
 ## Quick start
@@ -79,10 +79,14 @@ Other commands: `uv run scripts/generate_sessions.py` (regenerate the simulated 
 
 `heard` checks any running web app for accessibility regressions. The target repo needs nothing installed: the browser already builds an accessibility tree for every page.
 
+Install: `npx heard <command>` (Node ≥18 plus [uv](https://docs.astral.sh/uv/)) or `uvx heard <command>` (uv only). The npm package is a thin launcher for the Python CLI of the same version. Chromium is downloaded on first run. Unreleased `main`: `HEARD_FROM=git+https://github.com/WinexWolf/Heard npx heard …` or `uvx --from git+https://github.com/WinexWolf/Heard heard …`.
+
 ```bash
-uvx --from git+https://github.com/WinexWolf/Heard heard init      # writes heard.toml: url, optional start command, pages, flows
-uvx --from git+https://github.com/WinexWolf/Heard heard snapshot  # records what a screen-reader user hears -> heard.snapshot.json (commit it)
-uvx --from git+https://github.com/WinexWolf/Heard heard check     # re-records, diffs, audits only what changed; exit 1 on regressions
+npx heard init      # writes heard.toml: url, optional start command, pages, flows
+npx heard snapshot  # records what a screen-reader user hears -> heard.snapshot.json (commit it)
+npx heard check     # re-records, diffs, audits only what changed; exit 1 on regressions
+npx heard report    # opens the last check as a page (.heard/report.html)
+npx heard fix       # patches your source for those regressions; keeps only fixes verified on the running app
 ```
 
 How `check` keeps model cost down while still running on every push:
@@ -90,13 +94,32 @@ How `check` keeps model cost down while still running on every push:
 1. **Record (no model):** Heard drives each page in Chromium like a screen-reader user: a browse pass over headings and images, then Tab through every focusable element. It never clicks on its own; Enter, Space and typing happen only in `flows` you declare. Each step's announcement is built from the accessibility tree. This takes a few seconds per page.
 2. **Diff:** the new speech is compared with the baseline snapshot from the base commit (`--base`, default: the PR's target branch in CI, else `HEAD`). A change anywhere in the code that alters what users hear shows up, even on pages the change didn't touch. Selector or markup changes that sound the same are ignored.
 3. **Audit only the diff:** changed steps, with two steps of context on each side, go to `MODEL_PERCEPTION`. The same evidence check drops findings whose quote was never heard. Identical diffs are answered from `.heard/cache.json`, so a push that changes nothing users hear makes zero model calls.
-4. **Decide:** the check exits 1 on new issues at or above `fail_on`. It writes `.heard/report.md` (also to the GitHub step summary) and `.heard/report.json`. Without a model key, it still reports the speech diff and exits 0 as "unaudited".
+4. **Decide:** the check exits 1 on new issues at or above `fail_on`. It writes `.heard/report.md` (also to the GitHub step summary), `.heard/report.json` and `.heard/report.html`. Without a model key, it still reports the speech diff and exits 0 as "unaudited".
+
+`.heard/report.html` is one self-contained page (no server, no network) with the result, each regression, and a before/after of every announcement that changed, in light or dark. It opens straight from a downloaded CI artifact. It is built from `frontend/src/Report.tsx` into `heard/app/report_ui/report.html`, which is committed so `uvx` installs have it. `npm run build` regenerates it.
 
 `examples/github-action.yml` runs this on every push and PR, comments the report on PRs, and uploads `.heard/`. Because the snapshot is committed, a PR's diff of `heard.snapshot.json` shows reviewers exactly what screen-reader users will hear differently.
 
-Measured on the demo sites, with the shop and signup served as one app and a fixed → buggy "push": the diff surfaced the unlabeled cart button, missing alt text, the three "Learn more" links, five identical "Edit" buttons, the checkbox that lost its state, "Continue" instead of "Create account", and the validation error that went silent. It took about 5 s with no model calls (`backend/tests/test_cli.py`). The placeholder-only email field (B03) sounds the same either way, so the diff can't hear it.
+Measured on the demo sites, with the shop and signup served as one app and a fixed → buggy "push": the diff surfaced the unlabeled cart button, missing alt text, the three "Learn more" links, five identical "Edit" buttons, the checkbox that lost its state, "Continue" instead of "Create account", and the validation error that went silent. It took about 5 s with no model calls (`heard/tests/test_cli.py`). The placeholder-only email field (B03) sounds the same either way, so the diff can't hear it.
 
-Not built yet: `heard fix` (patching your source against the live dev server), and a source locator for component frameworks.
+`heard fix` works on the last check's failing findings (`--all` for every finding), against your running dev server:
+
+1. **Already fixed?** The live page is checked first. If it already passes, the finding is skipped and no model call is made.
+2. **Locate:** the element's id, `aria-label`, alt, placeholder, classes and visible text from the snapshot are searched for under `src` in `heard.toml`. The best-matching files (at most 3, skipping `node_modules`, build output and files over 60 KB) are sent to `MODEL_PATCH`, plus Tavily snippets if `TAVILY_API_KEY` is set.
+3. **Patch and verify live:** the edits are written to your working tree. Once the dev server reloads, the page must pass the assertion for that issue type (accessible name, label, live region, dialog focus, tab state, and so on) with no new axe violations. Heard polls for up to `fix_timeout` seconds (default 10).
+4. **Repair, escalate, restore:** a failed attempt is restored byte for byte, then retried once with the failure reason, then once with `MODEL_ESCALATION`. Only verified fixes stay in your tree. `--dry-run` verifies them and then reverts too. Diffs are written to `.heard/fixes/`, and the report shows each fix's status, the model that made it, what users now hear, and the diff.
+
+Then review with `git diff` and accept the new speech with `heard check --update`. Known limits: the locator matches text, so a component whose markup is assembled from props may not be found (reported as "source not found"); and a fix that changes the element's selector (for example a `div` path selector after turning it into a `button`) fails verification unless the element keeps its id.
+
+### Releasing the CLI
+
+PyPI first: the npm launcher runs `uvx heard==<its own version>`, so that version must already exist on PyPI. Keep `pyproject.toml` and `npm/package.json` at the same version (a test enforces it).
+
+```bash
+(cd frontend && npm run build)      # refreshes heard/app/report_ui/report.html, which ships in the wheel
+uv build && uv publish              # PyPI: needs a PyPI token (UV_PUBLISH_TOKEN)
+(cd npm && npm publish)             # npm: needs `npm login`
+```
 
 ## Demo sites and seeded bugs
 

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heard report</title>
+    <meta name="description" content="What screen-reader users will hear differently after this change." />
+    <script>
+      (function () {
+        var pref = null
+        try { pref = localStorage.getItem('heard-theme') } catch (e) {}
+        var dark = pref === 'dark' || (pref !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      })()
+    </script>
+  </head>
+  <body>
+    <script id="heard-data" type="application/json">__HEARD_REPORT__</script>
+    <div id="root"></div>
+    <script type="module" src="/src/main-report.tsx"></script>
+  </body>
+</html>

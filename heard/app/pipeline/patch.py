@@ -52,11 +52,12 @@ class PatchError(Exception):
 
 
 def apply_edits(files_dir: Path, edits) -> None:
-    """Apply search/replace edits in place. Fails cleanly (no partial writes) unless every old_str is unique."""
+    """Apply search/replace edits in place. `file` may be a nested path under files_dir, never outside it.
+    Fails cleanly (no partial writes) unless every old_str is unique."""
     staged: dict[str, str] = {}
     for e in edits:
         p = files_dir / e.file
-        if not p.exists() or p.resolve().parent != files_dir.resolve():
+        if not p.is_file() or not p.resolve().is_relative_to(files_dir.resolve()):
             raise PatchError(f"file not found: {e.file}")
         text = staged.get(e.file, p.read_text())
         n = text.count(e.old_str)

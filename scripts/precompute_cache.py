@@ -6,8 +6,8 @@
 import json, shutil, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from backend.app.config import DATA, get_settings
-from backend.app.pipeline import run
+from heard.app.config import DATA, get_settings
+from heard.app.pipeline import run
 
 
 def main():

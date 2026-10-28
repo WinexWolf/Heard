@@ -1,7 +1,7 @@
 """Repair -> escalation flow with a scripted LLM and the real verifier."""
 import json
-from backend.app.pipeline import run
-from backend.app.schemas import Finding
+from heard.app.pipeline import run
+from heard.app.schemas import Finding
 from .conftest import FakeLLM, StubSettings, ROOT
 
 F = Finding(id="F1", t_start=21.6, t_end=23, announced_text="button", visible_text_or_description="cart icon", issue_type="missing_name",

@@ -1,6 +1,6 @@
 import pytest
-from backend.app.pipeline.patch import apply_edits, PatchError, parse_patch
-from backend.app.schemas import Edit
+from heard.app.pipeline.patch import apply_edits, PatchError, parse_patch
+from heard.app.schemas import Edit
 
 
 def site(tmp_path):

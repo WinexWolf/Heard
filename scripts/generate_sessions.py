@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from playwright.sync_api import sync_playwright
-from backend.app import a11y
+from heard.app import a11y
 
 ROOT = a11y.ROOT
 SITES = ["shop", "signup", "dashboard"]

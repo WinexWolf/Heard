@@ -14,6 +14,6 @@ eval:
 test: build
 	uv run pytest -q
 run: build
-	uv run uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+	uv run uvicorn heard.app.main:app --host 0.0.0.0 --port 8000
 docker:
 	docker build -t heard . && docker run --rm -p 8000:8000 --env-file .env heard

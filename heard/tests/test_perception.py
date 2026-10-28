@@ -1,7 +1,7 @@
 import json
 import pytest
-from backend.app.pipeline import perception
-from backend.app.schemas import Finding
+from heard.app.pipeline import perception
+from heard.app.schemas import Finding
 from .conftest import FakeLLM, ROOT
 
 GOOD = json.dumps({"findings": [{"id": "F1", "t_start": 7.0, "t_end": 8.0, "announced_text": "button", "visible_text_or_description": "cart icon",

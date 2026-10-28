@@ -14,10 +14,10 @@ ENV PYTHONUNBUFFERED=1 PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg espeak-ng nodejs npm && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY pyproject.toml uv.lock .python-version ./
-RUN uv sync --frozen --no-dev && uv run --no-sync playwright install --with-deps chromium && rm -rf /var/lib/apt/lists/*
+RUN uv sync --frozen --no-dev --no-install-project && uv run --no-sync playwright install --with-deps chromium && rm -rf /var/lib/apt/lists/*
 COPY scripts/package*.json scripts/
 RUN cd scripts && npm install --no-audit --no-fund
-COPY backend backend
+COPY heard heard
 COPY demo_sites demo_sites
 COPY scripts scripts
 COPY eval eval
@@ -26,4 +26,4 @@ COPY --from=web /app/frontend/dist frontend/dist
 # cached demo results + sessions are baked into the image (data/); only env vars are needed for "Run live"
 ENV PORT=8000 PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uvicorn heard.app.main:app --host 0.0.0.0 --port ${PORT}"]

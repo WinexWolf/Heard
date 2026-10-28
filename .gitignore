@@ -12,3 +12,4 @@ data/sessions/*/frames/
 .history
 SUBMISSION.md
 .heard/
+dist/

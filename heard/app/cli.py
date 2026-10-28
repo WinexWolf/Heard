@@ -3,27 +3,31 @@
   heard init                 write heard.toml
   heard snapshot             record what a screen-reader user hears now -> heard.snapshot.json
   heard check                re-record, diff against the base snapshot, audit only what changed, exit 1 on regressions
+  heard report               open the last check as a page (.heard/report.html)
+  heard fix                  patch the source for those regressions; keep only fixes verified on the running app
 
 Every push is re-recorded (cheap, deterministic, no model). The model only sees steps whose announcements changed,
 and identical diffs are answered from .heard/cache.json, so a push that changes nothing users hear costs no tokens.
 """
 from __future__ import annotations
-import argparse, hashlib, json, os, signal, subprocess, sys, time, tomllib
+import argparse, hashlib, json, os, signal, subprocess, sys, time, tomllib, webbrowser
 from contextlib import contextmanager
 from pathlib import Path
 import httpx
 from dotenv import load_dotenv
-from . import driver, speechdiff
+from . import driver, report, speechdiff
 from .pipeline import perception
 
 SEVERITY = ["low", "medium", "high", "critical"]
-DEFAULTS = {"pages": ["/"], "flows": {}, "snapshot": "heard.snapshot.json", "fail_on": "medium", "start_timeout": 90, "out_dir": ".heard"}
+DEFAULTS = {"pages": ["/"], "flows": {}, "snapshot": "heard.snapshot.json", "fail_on": "medium", "start_timeout": 90, "out_dir": ".heard",
+            "src": ["."], "fix_timeout": 10}
 TEMPLATE = '''# Heard: accessibility regression checks. Docs: https://github.com/WinexWolf/Heard
 url = "{url}"
 # start = "npm run dev"          # optional: Heard starts the app and waits for the URL
 pages = ["/"]
 snapshot = "heard.snapshot.json"  # commit this: PRs then show what screen-reader users will hear differently
 fail_on = "medium"                # fail the check on new issues at or above this severity
+src = ["src"]                     # where `heard fix` looks for the source of a broken element
 
 # Heard only presses Tab on its own. Declare flows for anything that needs Enter, Space or typing.
 # [flows.signup-error]
@@ -89,11 +93,11 @@ def load_baseline(path: Path, ref: str) -> tuple[dict | None, str]:
     return None, "none"
 
 
-def make_llm():
+def make_llm(roles: tuple[str, ...] = ("perception",)):
     from .config import get_settings
     from .llm import LLM
     s = get_settings()
-    if any(not v or v.startswith("<") for v in (s.api_key, s.base_url, s.models["perception"])):
+    if any(not v or v.startswith("<") for v in (s.api_key, s.base_url, *(s.models[r] for r in roles))):
         return None
     return LLM(s)
 
@@ -171,17 +175,72 @@ def cmd_check(a) -> int:
     changed = any(c["notes"] for c in speechdiff.diff(base, head).values())
     llm = make_llm() if changed and not a.no_llm else None
     out = Path(cfg["out_dir"])
-    rep = run_check(cfg, base, head, llm, out / "cache.json")
+    rep = {**run_check(cfg, base, head, llm, out / "cache.json"), "base": base_label, "generated_at": head["generated_at"]}
     md = markdown(rep, base_label)
     out.mkdir(parents=True, exist_ok=True)
     (out / "report.json").write_text(json.dumps(rep, indent=1)); (out / "report.md").write_text(md)
+    report.write(rep, out / "report.html")
     (out / "snapshot.json").write_text(json.dumps(head, indent=1))
     if os.getenv("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as fh: fh.write(md)
     if a.update:
         Path(cfg["snapshot"]).write_text(json.dumps(head, indent=1))
-    print(md)
+    print(md + f"\nFull report: {out / 'report.html'} (or run `heard report`)")
     return 1 if rep["result"] == "fail" else 0
+
+
+def cmd_report(a) -> int:
+    out = Path(DEFAULTS["out_dir"])
+    if Path(a.config).exists():
+        out = Path(load_config(Path(a.config))["out_dir"])
+    src = out / "report.json"
+    if not src.exists():
+        print(f"{src} not found: run `heard check` first"); return 2
+    page = report.write(json.loads(src.read_text()), out / "report.html").resolve()
+    print(f"report: {page}")
+    if not a.no_open:
+        webbrowser.open(page.as_uri())
+    return 0
+
+
+def cmd_fix(a) -> int:
+    from playwright.sync_api import sync_playwright
+    from . import a11y, fixer
+    from .config import get_settings
+    cfg = load_config(Path(a.config)); out = Path(cfg["out_dir"])
+    if not (out / "report.json").exists() or not (out / "snapshot.json").exists():
+        print(f"no check results in {out}: run `heard check` first"); return 2
+    rep, snap = json.loads((out / "report.json").read_text()), json.loads((out / "snapshot.json").read_text())
+    if not rep["findings"]:
+        print("nothing to fix: the last check found no regressions" + (" (it was not audited: no model key)" if rep["result"] == "unaudited" else "")); return 0
+    llm = make_llm(("patch",))
+    if llm is None:
+        print("heard fix needs NEBIUS_API_KEY, NEBIUS_BASE_URL and MODEL_PATCH (MODEL_ESCALATION optional)"); return 2
+    s = get_settings()
+    models = {r: (m if m and not m.startswith("<") else None) for r, m in s.models.items()}
+    tavily = s.tavily_key if s.tavily_key and not s.tavily_key.startswith("<") else None
+    with app_running(cfg), sync_playwright() as pw:
+        br = a11y.launch_chromium(pw)
+        try:
+            done = fixer.run_fix(cfg, rep, snap, llm, models, Path.cwd(), br, a.all, not a.dry_run, tavily)
+        finally:
+            br.close()
+    rep["fix_cost"] = llm.tracker.summary()["total"]
+    (out / "report.json").write_text(json.dumps(rep, indent=1)); report.write(rep, out / "report.html")
+    (out / "fixes").mkdir(exist_ok=True)
+    for f in done:
+        x = f["fix"]
+        if x.get("diff"): (out / "fixes" / f"{f['id']}.diff").write_text(x["diff"])
+        mark = {"fixed": "✓ fixed", "already_fixed": "✓ already fixed", "failed": "✕ not fixed", "no_source": "✕ source not found"}[x["status"]]
+        print(f"{mark:18} {f['page']}  {f['issue_type'].replace('_', ' ')}: “{f['announced_text'] or 'silence'}”"
+              + (f"  [{', '.join(x['files'])}, by {x['model']}]" if x["status"] == "fixed" else f"  ({x.get('reason', '')[:100]})" if x["status"] != "already_fixed" else ""))
+    fixed = [f for f in done if f["fix"]["status"] == "fixed"]
+    if fixed and not a.dry_run:
+        print(f"\nKept {len(fixed)} verified fix(es) in your working tree. Review with `git diff`, then `heard check --update` to accept the new speech.")
+    elif fixed:
+        print(f"\nDry run: {len(fixed)} fix(es) verified and reverted; diffs in {out / 'fixes'}/")
+    print(f"Report: {out / 'report.html'}")
+    return 0 if all(f["fix"]["status"] in ("fixed", "already_fixed") for f in done) else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -196,6 +255,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-llm", action="store_true", help="only report what changed; spend no tokens")
     p.add_argument("--update", action="store_true", help="also save the new snapshot as the baseline")
     p.set_defaults(fn=cmd_check)
+    p = sub.add_parser("report", help="open the last check as a page"); p.add_argument("--no-open", action="store_true"); p.set_defaults(fn=cmd_report)
+    p = sub.add_parser("fix", help="patch the source for the last check's regressions; keep only fixes verified on the running app")
+    p.add_argument("--all", action="store_true", help="also fix findings below fail_on")
+    p.add_argument("--dry-run", action="store_true", help="verify fixes, then revert them and only write diffs to .heard/fixes/")
+    p.set_defaults(fn=cmd_fix)
     a = ap.parse_args(argv)
     return a.fn(a)
 

@@ -1,5 +1,5 @@
-from backend.app.ratelimit import RateLimiter
-from backend.app.llm import CostTracker
+from heard.app.ratelimit import RateLimiter
+from heard.app.llm import CostTracker
 
 
 def test_rate_limiter_blocks_then_recovers():
@@ -27,3 +27,11 @@ def test_cost_tracker_totals_and_split():
 def test_tavily_calls_are_logged():
     t = CostTracker(); t.record_tavily("q", 0.4, 3)
     assert t.summary()["total"]["tavily_calls"] == 1 and t.summary()["tavily"][0]["query"] == "q"
+
+
+def test_npm_launcher_version_matches_python_package():
+    """npx heard runs `uvx heard==<npm version>`, so the two releases must share a version."""
+    import json, tomllib
+    from .conftest import ROOT
+    py = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    assert json.loads((ROOT / "npm/package.json").read_text())["version"] == py

@@ -20,7 +20,7 @@ def group_selector(sel: str) -> str:
 
 
 def axe_counts(page: Page) -> dict[str, int]:
-    page.add_script_tag(path=str(a11y.AXE_JS))
+    a11y.add_axe(page)
     res = page.evaluate("axe.run().then(r => r.violations.map(v => [v.id, v.nodes.length]))")
     return {i: n for i, n in res}
 

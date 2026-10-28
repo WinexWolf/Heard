@@ -3,7 +3,7 @@ import socket, subprocess, sys, time
 import pytest
 import httpx
 from playwright.sync_api import sync_playwright
-from backend.app import a11y
+from heard.app import a11y
 from .conftest import ROOT
 
 
@@ -12,7 +12,7 @@ def server():
     if not (ROOT / "frontend/dist/index.html").exists():
         pytest.skip("frontend not built (cd frontend && npm run build)")
     s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
-    p = subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.app.main:app", "--port", str(port)], cwd=ROOT,
+    p = subprocess.Popen([sys.executable, "-m", "uvicorn", "heard.app.main:app", "--port", str(port)], cwd=ROOT,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(50):
         try: httpx.get(f"http://127.0.0.1:{port}/api/capabilities"); break

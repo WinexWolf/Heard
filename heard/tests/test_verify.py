@@ -1,7 +1,7 @@
 """Each verifier assertion: the reference fix passes AND the unpatched page fails (no rubber stamp)."""
 import json
 import pytest
-from backend.app.pipeline import oracle, verify
+from heard.app.pipeline import oracle, verify
 from .conftest import ROOT
 
 CASES = []
@@ -25,14 +25,14 @@ def test_unpatched_page_fails(site, bug, itype, sel):
 
 
 def test_bad_patch_is_reported_not_raised():
-    from backend.app.schemas import Edit
+    from heard.app.schemas import Edit
     r = verify.verify_edits(ROOT / "demo_sites/shop/buggy", [Edit(file="index.html", old_str="nope", new_str="x")], "missing_name", "#cart-btn")
     assert not r["passed"] and "could not be applied" in r["reason"]
 
 
 def test_new_axe_violation_fails_a_fix():
     """A patch that fixes the name but adds an axe violation (duplicate id) must be rejected."""
-    from backend.app.schemas import Edit
+    from heard.app.schemas import Edit
     e = Edit(file="index.html", old_str='<button id="cart-btn" class="icon-btn" type="button">',
              new_str='<button id="cart-btn" class="icon-btn" type="button" aria-label="Cart" aria-hidden="true">')
     r = verify.verify_edits(ROOT / "demo_sites/shop/buggy", [e], "missing_name", "#cart-btn")
