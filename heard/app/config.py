@@ -39,6 +39,9 @@ class Settings:
                 except ValueError: return None
             self.prices[self.models[role] or role] = (f("INPUT"), f("OUTPUT"))
         self.provider = {role: (_clean(os.getenv(f"{role.upper()}_PROVIDER")) or "nebius").lower() for role in self.models}
+        # optional cap on a reasoning model's thinking tokens (sent as chat_template_kwargs.thinking_token_budget)
+        self.thinking_budget = {role: int(v) if (v := _clean(os.getenv(f"{role.upper()}_THINKING_BUDGET"))).isdigit() else None
+                                for role in self.models}
         self.rate_limit = int(_clean(os.getenv("RATE_LIMIT_ANALYSES_PER_HOUR")) or 6)
         self.demo_cache = (_clean(os.getenv("DEMO_MODE_CACHE")) or "true").lower() == "true"
 

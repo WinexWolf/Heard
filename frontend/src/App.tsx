@@ -23,6 +23,7 @@ function progressOf(ev: { stage: string; role?: string; passed?: boolean; reason
   if (ev.stage === 'citation') return { text: 'Finding the W3C guidance…', tone: 'muted' }
   if (ev.stage === 'patch') return { text: `${ev.role === 'escalation' ? 'Nemotron Ultra' : 'Nemotron Super'} wrote a patch · verifying in Chromium…`, tone: 'muted' }
   if (ev.passed) return { text: '✓ Fix verified', tone: 'success' }
+  if (ev.role === 'precheck') return { text: '— Not reproduced: the page already passes this check, so nothing to fix', tone: 'muted' }
   return { text: `✕ ${ev.reason || 'Verification failed'}${ev.role === 'escalation' ? '' : ' · trying again'}`, tone: 'destructive' }
 }
 const money = (c?: CostAgg) => (!c ? '–' : c.cost_known === false ? 'price not set' : `$${c.cost_usd.toFixed(4)}`)

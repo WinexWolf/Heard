@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64, json, re, subprocess, tempfile
 from pathlib import Path
 from pydantic import ValidationError
+from ..llm import first_json
 from ..schemas import FindingList, Finding
 
 SYSTEM = """You are an accessibility auditor who evaluates what a screen-reader user HEARD against what was on screen.
@@ -18,7 +19,8 @@ Rules:
     missing_label       a form field whose name comes only from its placeholder, or that has no name
     vague_link          links whose text alone is meaningless ("Learn more", "Click here", "Read more")
     repeated_control    several controls announced identically ("Edit, button" x5) that do different things
-    error_not_announced an error, status or confirmation appears on screen but nothing (or "(silence)") is heard
+    error_not_announced an error, status or confirmation MESSAGE appears on screen but nothing (or "(silence)") is heard.
+                        Not for new content shown by switching a tab (tab_widget) or opening a dialog (modal_dialog).
     label_in_name       the announced name differs from the visible label (heard "Continue", screen says "Create account")
     missing_state       a checkbox, switch or toggle with no checked/pressed/expanded state, or a state that never changes
     div_button          something that acts as a button is announced as "clickable", "group" or plain text
@@ -87,10 +89,7 @@ def build_messages(session_dir: Path, steps: list[dict], mode: str, caps: dict) 
 
 
 def parse_findings(raw: str) -> FindingList:
-    m = re.search(r"\{.*\}", raw, re.S)
-    if not m:
-        raise ValueError("no JSON object in model output")
-    return FindingList.model_validate(json.loads(m.group(0)))
+    return FindingList.model_validate(first_json(raw, "{"))
 
 
 def norm(s: str) -> str:
@@ -105,8 +104,11 @@ def evidence_check(findings: list[Finding], speech_log: list[dict], steps: list[
     A quote may span up to three consecutive announcements (e.g. a heading pair quoted together)."""
     supported, rejected = [], []
     for f in findings:
-        near = [norm(e["text"]) for e in sorted(speech_log, key=lambda e: e["t"]) if abs(e["t"] - f.t_start) <= window]
-        spans = [" ".join(near[i:j]) for i in range(len(near)) for j in range(i + 1, min(i + 4, len(near) + 1))]
+        log = sorted(speech_log, key=lambda e: e["t"])
+        texts = [norm(e["text"]) for e in log]
+        # a span qualifies if any announcement in it is near t_start; the span itself may run past the window
+        spans = [" ".join(texts[i:j]) for i in range(len(log)) for j in range(i + 1, min(i + 4, len(log) + 1))
+                 if any(abs(e["t"] - f.t_start) <= window for e in log[i:j])]
         quote = norm(f.announced_text)
         if quote not in SILENCE:
             ok = any(quote in s for s in spans)
@@ -124,7 +126,7 @@ def ask_findings(llm, msgs: list[dict], extra: dict | None = None) -> FindingLis
     err = ""
     for attempt in range(2):
         m = msgs if not err else msgs + [{"role": "user", "content": f"Your previous reply was invalid ({err}). Return ONLY valid JSON matching the schema."}]
-        raw = llm.chat("perception", "perception", m, max_tokens=4096, extra=extra)
+        raw = llm.chat("perception", "perception", m, max_tokens=4096, temperature=0, extra=extra)
         try:
             return parse_findings(raw)
         except (ValueError, ValidationError, json.JSONDecodeError) as e:

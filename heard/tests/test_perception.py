@@ -72,7 +72,7 @@ def test_native_av_sends_the_recordings_own_audio():
 
 
 def test_evidence_accepts_spanning_quotes_and_written_out_silence():
-    log = [{"t": 0.9, "text": "Sales dashboard, heading level 1"}, {"t": 2.1, "text": "Overview, heading level 3"}, {"t": 4.0, "text": "Export CSV, clickable"}]
+    log = [{"t": 0.9, "text": "Sales dashboard, heading level 1"}, {"t": 4.1, "text": "Overview, heading level 3"}, {"t": 7.1, "text": "Export CSV, clickable"}]   # real dashboard timings: the pair spans 3.2s
     steps = [{"t": 9.6, "silent": True}]
     mk = lambda t, q: Finding(id="F", t_start=t, t_end=t, announced_text=q, visible_text_or_description="", issue_type="other",
                               severity="low", wcag_guess="", evidence="")

@@ -8,20 +8,297 @@
     "patch": "nvidia/nemotron-3-super-120b-a12b",
     "escalation": "nvidia/Nemotron-3-Ultra-550b-a55b"
   },
-  "generated_at": "2026-10-28T20:52:38",
+  "generated_at": "2026-10-28T22:27:50",
   "label": "simulated screen reader",
   "findings": [
     {
       "finding": {
+        "id": "F1",
+        "t_start": 0.88,
+        "t_end": 4.08,
+        "announced_text": "Sales dashboard, heading level 1",
+        "visible_text_or_description": "Sales dashboard",
+        "issue_type": "heading_skip",
+        "severity": "high",
+        "wcag_guess": "1.3.1",
+        "evidence": "Screen reader announced \"Sales dashboard, heading level 1\" then later \"Overview, heading level 3\", indicating a jump from level 1 to level 3, violating WCAG 2.1.1 (non-consecutive heading levels)."
+      },
+      "step": {
+        "i": 0,
+        "t": 0.88,
+        "kind": "browse",
+        "key": "Down",
+        "selector": "header.bar > h1",
+        "html": "<h1>Sales dashboard</h1>",
+        "name": "Sales dashboard",
+        "role": "heading",
+        "visible_text": "Sales dashboard",
+        "announcement": "Sales dashboard, heading level 1"
+      },
+      "citations": [
+        {
+          "title": "Understanding Techniques for WCAG 2.1 Success Criteria | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Understanding/understanding-techniques"
+        },
+        {
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
+        },
+        {
+          "title": "Understanding Success Criterion 1.3.1: Info and Relationships | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships"
+        }
+      ],
+      "query": "WCAG 2.2 1.3.1 Info and Relationships heading levels do not skip technique",
+      "attempts": [
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "\n<h3 id=\"overview-heading\">Overview</h3>\n",
+              "new_str": "\n<h2 id=\"overview-heading\">Overview</h2>\n"
+            }
+          ],
+          "rationale": "",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "heading levels [1, 2]"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {},
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
+      "final": {
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "\n<h3 id=\"overview-heading\">Overview</h3>\n",
+            "new_str": "\n<h2 id=\"overview-heading\">Overview</h2>\n"
+          }
+        ],
+        "rationale": "",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "heading levels [1, 2]"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {},
+          "after_announcement": ""
+        }
+      },
+      "before_audio": "sessions/dashboard_buggy/step_0_before.wav",
+      "after_audio": null
+    },
+    {
+      "finding": {
         "id": "F2",
-        "t_start": 10.93,
-        "t_end": 14.18,
-        "announced_text": "Export CSV, clickable",
-        "visible_text_or_description": "Export CSV button visible but announced as clickable (role mismatch)",
-        "issue_type": "other",
+        "t_start": 9.61,
+        "t_end": 9.61,
+        "announced_text": "(silence)",
+        "visible_text_or_description": "Settings modal dialog",
+        "issue_type": "modal_dialog",
         "severity": "medium",
         "wcag_guess": "4.1.2",
-        "evidence": "Export CSV, clickable"
+        "evidence": "At t=9.61s the screen reader heard \"(silence)\" while a modal dialog opened, indicating the dialog was not announced as required by WCAG 3.3.1."
+      },
+      "step": {
+        "i": 3,
+        "t": 9.61,
+        "kind": "action",
+        "key": "Enter",
+        "selector": "#open-modal",
+        "html": "<button type=\"button\" id=\"open-modal\">Settings</button>",
+        "name": "Settings",
+        "role": "button",
+        "visible_text": "Settings",
+        "announcement": "",
+        "screen_change": "a modal dialog opened on screen; screen now also shows: Refresh interval / 1 minute / 5 minutes / Close",
+        "live_region": false,
+        "acted_on": "Settings, button",
+        "silent": true
+      },
+      "citations": [
+        {
+          "title": "ARIA4: Using a WAI-ARIA role to expose the role of a user interface component | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA4"
+        },
+        {
+          "title": "ARIA4: Using a WAI-ARIA role to expose the role of a user interface component | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA4.html"
+        },
+        {
+          "title": "ARIA4: Using a WAI-ARIA role to expose the role of a user interface component | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA4.html"
+        }
+      ],
+      "query": "WCAG 2.2 4.1.2 Name, Role, Value dialog role aria-modal focus management technique",
+      "attempts": [
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "focus is not moved into the dialog when it opens (this changes at runtime: update the click/keydown handler in the site's .js file, not only the HTML)",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\">",
+              "new_str": "<div id=\"modal\" class=\"modal\" hidden role=\"dialog\" aria-labelledby=\"modal-title\" aria-modal=\"true\"><div class=\"modal-box\">"
+            }
+          ],
+          "rationale": "Add role=\"dialog\", aria-labelledby and aria-modal attributes to the modal container so that when it becomes visible screen readers announce it as a dialog.",
+          "verification": {
+            "passed": false,
+            "reason": "focus is not moved into the dialog when it opens (this changes at runtime: update the click/keydown handler in the site's .js file, not only the HTML)",
+            "checks": [
+              "dialog name after opening = 'Settings'",
+              "after opening, focus inside dialog = False"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "no element with role=dialog",
+          "edits": [
+            {
+              "file": "app.js",
+              "old_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; });",
+              "new_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; modal.querySelector('#refresh').focus(); });"
+            }
+          ],
+          "rationale": "Move focus to the refresh selector inside the modal when it opens, ensuring screen readers announce the dialog and satisfy WCAG 4.1.2.",
+          "verification": {
+            "passed": false,
+            "reason": "no element with role=dialog",
+            "checks": [],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "role": "escalation",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\">",
+              "new_str": "<div id=\"modal\" class=\"modal\" hidden role=\"dialog\" aria-labelledby=\"modal-title\"><div class=\"modal-box\">"
+            },
+            {
+              "file": "app.js",
+              "old_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; });",
+              "new_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; modal.querySelector('#refresh').focus(); });"
+            }
+          ],
+          "rationale": "Add role=\"dialog\" and aria-labelledby to the modal element so screen readers announce it as a dialog, and move focus to the first focusable control inside when opened.",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "dialog name after opening = 'Settings'",
+              "after opening, focus inside dialog = True"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {
+              "heading-order": 1
+            },
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "final": {
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "role": "escalation",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div id=\"modal\" class=\"modal\" hidden><div class=\"modal-box\">",
+            "new_str": "<div id=\"modal\" class=\"modal\" hidden role=\"dialog\" aria-labelledby=\"modal-title\"><div class=\"modal-box\">"
+          },
+          {
+            "file": "app.js",
+            "old_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; });",
+            "new_str": "document.getElementById('open-modal').addEventListener('click', () => { modal.hidden = false; modal.querySelector('#refresh').focus(); });"
+          }
+        ],
+        "rationale": "Add role=\"dialog\" and aria-labelledby to the modal element so screen readers announce it as a dialog, and move focus to the first focusable control inside when opened.",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "dialog name after opening = 'Settings'",
+            "after opening, focus inside dialog = True"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {
+            "heading-order": 1
+          },
+          "after_announcement": ""
+        }
+      },
+      "before_audio": null,
+      "after_audio": "runs/dashboard_buggy/after_F2.wav"
+    },
+    {
+      "finding": {
+        "id": "F3",
+        "t_start": 10.93,
+        "t_end": 10.93,
+        "announced_text": "Export CSV, clickable",
+        "visible_text_or_description": "Export CSV button",
+        "issue_type": "div_button",
+        "severity": "medium",
+        "wcag_guess": "4.1.2",
+        "evidence": "The Export CSV control is a button but was announced as \"clickable\" rather than as a button, violating WCAG 1.4.1 (non-textual button labeling)."
       },
       "step": {
         "i": 4,
@@ -41,15 +318,15 @@
           "url": "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html"
         },
         {
-          "title": "Guidance on Applying WCAG 2.2 to Mobile Applications (WCAG2Mobile)",
-          "url": "https://www.w3.org/TR/wcag2mobile-22"
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
         },
         {
-          "title": "Guidance on Applying WCAG 2 to Non-Web Information and Communications Technologies (WCAG2ICT)",
-          "url": "https://www.w3.org/TR/wcag2ict-22"
+          "title": "Image button has non-empty accessible name | ACT Rule | WAI | W3C",
+          "url": "https://www.w3.org/WAI/standards-guidelines/act/rules/59796f"
         }
       ],
-      "query": "WCAG 2.2 4.1.2 Name, Role, Value other technique",
+      "query": "WCAG 2.2 4.1.2 Name, Role, Value use native button element instead of div role=button technique",
       "attempts": [
         {
           "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -63,12 +340,12 @@
               "new_str": "<button class=\"btn\" id=\"export\">Export CSV</button>"
             }
           ],
-          "rationale": "Replace the div acting as a button with a native <button> element so its role is correctly announced as a button, fixing the 4.1.2 name/role mismatch.",
+          "rationale": "Replace the div acting as a button with a native button element so assistive technologies announce it as a button rather than generic clickable text.",
           "verification": {
             "passed": true,
             "reason": "",
             "checks": [
-              "accessible name = 'Export CSV'"
+              "role=button tabIndex=0"
             ],
             "new_violations": [],
             "axe_before": {
@@ -95,12 +372,12 @@
             "new_str": "<button class=\"btn\" id=\"export\">Export CSV</button>"
           }
         ],
-        "rationale": "Replace the div acting as a button with a native <button> element so its role is correctly announced as a button, fixing the 4.1.2 name/role mismatch.",
+        "rationale": "Replace the div acting as a button with a native button element so assistive technologies announce it as a button rather than generic clickable text.",
         "verification": {
           "passed": true,
           "reason": "",
           "checks": [
-            "accessible name = 'Export CSV'"
+            "role=button tabIndex=0"
           ],
           "new_violations": [],
           "axe_before": {
@@ -113,83 +390,70 @@
         }
       },
       "before_audio": "sessions/dashboard_buggy/step_4_before.wav",
-      "after_audio": "runs/dashboard_buggy/after_F2.wav"
+      "after_audio": "runs/dashboard_buggy/after_F3.wav"
     }
   ],
-  "rejected_unsupported": [
-    {
-      "finding": {
-        "id": "F1",
-        "t_start": 0.88,
-        "t_end": 4.08,
-        "announced_text": "Sales dashboard, heading level 1 Overview, heading level 3",
-        "visible_text_or_description": "Sales dashboard heading level 1 followed by Overview heading level 3 (skip level 2)",
-        "issue_type": "heading_skip",
-        "severity": "medium",
-        "wcag_guess": "2.4.10",
-        "evidence": "Sales dashboard, heading level 1 Overview, heading level 3"
-      },
-      "reason": "announced_text \"Sales dashboard, heading level 1 Overview, heading level 3\" not found in speech log within 3.0s of t=0.88"
-    },
-    {
-      "finding": {
-        "id": "F3",
-        "t_start": 9.61,
-        "t_end": 10.93,
-        "announced_text": "(silence)",
-        "visible_text_or_description": "Settings button opened a modal dialog but no announcement of dialog title or content",
-        "issue_type": "modal_dialog",
-        "severity": "high",
-        "wcag_guess": "4.1.2",
-        "evidence": "(silence)"
-      },
-      "reason": "announced_text \"(silence)\" not found in speech log within 3.0s of t=9.61"
-    }
-  ],
+  "rejected_unsupported": [],
   "raw_finding_count": 3,
   "cost": {
     "total": {
-      "calls": 2,
-      "input_tokens": 6052,
-      "output_tokens": 4848,
-      "latency_s": 96.998,
-      "cost_usd": 0.000844,
+      "calls": 6,
+      "input_tokens": 12309,
+      "output_tokens": 4846,
+      "latency_s": 73.537,
+      "cost_usd": 0.006225,
       "cost_known": true,
-      "tavily_calls": 1
+      "tavily_calls": 3
     },
     "by_stage": {
       "perception": {
         "calls": 1,
-        "input_tokens": 4806,
-        "output_tokens": 4325,
-        "latency_s": 93.791,
+        "input_tokens": 5150,
+        "output_tokens": 2391,
+        "latency_s": 54.227,
         "cost_usd": 0.0,
         "cost_known": true
       },
       "patch": {
+        "calls": 4,
+        "input_tokens": 5649,
+        "output_tokens": 2069,
+        "latency_s": 17.478,
+        "cost_usd": 0.003557,
+        "cost_known": true
+      },
+      "escalation": {
         "calls": 1,
-        "input_tokens": 1246,
-        "output_tokens": 523,
-        "latency_s": 3.207,
-        "cost_usd": 0.000844,
+        "input_tokens": 1510,
+        "output_tokens": 386,
+        "latency_s": 1.832,
+        "cost_usd": 0.002668,
         "cost_known": true
       }
     },
     "by_model": {
       "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
         "calls": 1,
-        "input_tokens": 4806,
-        "output_tokens": 4325,
-        "latency_s": 93.791,
+        "input_tokens": 5150,
+        "output_tokens": 2391,
+        "latency_s": 54.227,
         "cost_usd": 0.0,
         "cost_known": true
       },
       "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 4,
+        "input_tokens": 5649,
+        "output_tokens": 2069,
+        "latency_s": 17.478,
+        "cost_usd": 0.003557,
+        "cost_known": true
+      },
+      "nvidia/Nemotron-3-Ultra-550b-a55b": {
         "calls": 1,
-        "input_tokens": 1246,
-        "output_tokens": 523,
-        "latency_s": 3.207,
-        "cost_usd": 0.000844,
+        "input_tokens": 1510,
+        "output_tokens": 386,
+        "latency_s": 1.832,
+        "cost_usd": 0.002668,
         "cost_known": true
       }
     },
@@ -197,31 +461,84 @@
       {
         "stage": "perception",
         "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
-        "input_tokens": 4806,
-        "output_tokens": 4325,
-        "latency_s": 93.791,
+        "input_tokens": 5150,
+        "output_tokens": 2391,
+        "latency_s": 54.227,
         "cost_usd": 0.0,
+        "ok": true,
+        "note": "1 retries"
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1335,
+        "output_tokens": 366,
+        "latency_s": 3.167,
+        "cost_usd": 0.0007299000000000001,
         "ok": true,
         "note": ""
       },
       {
         "stage": "patch",
         "model": "nvidia/nemotron-3-super-120b-a12b",
-        "input_tokens": 1246,
-        "output_tokens": 523,
-        "latency_s": 3.207,
-        "cost_usd": 0.0008445,
+        "input_tokens": 1413,
+        "output_tokens": 541,
+        "latency_s": 4.581,
+        "cost_usd": 0.0009107999999999999,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1531,
+        "output_tokens": 684,
+        "latency_s": 5.805,
+        "cost_usd": 0.0010749000000000002,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "escalation",
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "input_tokens": 1510,
+        "output_tokens": 386,
+        "latency_s": 1.832,
+        "cost_usd": 0.002668,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1370,
+        "output_tokens": 478,
+        "latency_s": 3.925,
+        "cost_usd": 0.0008412000000000001,
         "ok": true,
         "note": ""
       }
     ],
     "tavily": [
       {
-        "query": "WCAG 2.2 4.1.2 Name, Role, Value other technique",
-        "latency_s": 2.204,
+        "query": "WCAG 2.2 1.3.1 Info and Relationships heading levels do not skip technique",
+        "latency_s": 0.323,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.2 Name, Role, Value dialog role aria-modal focus management technique",
+        "latency_s": 0.253,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.2 Name, Role, Value use native button element instead of div role=button technique",
+        "latency_s": 0.25,
         "results": 3,
         "ok": true
       }
     ]
-  }
+  },
+  "merged_duplicates": []
 }

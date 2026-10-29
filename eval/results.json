@@ -1,23 +1,36 @@
 {
   "source": [
-    "oracle_stub"
+    "live"
   ],
   "perception_mode": [
-    "oracle_stub"
+    "native_av"
   ],
   "total_bugs": 12,
   "axe_detected": 4,
-  "heard_detected": 12,
-  "fixes_verified": 12,
+  "heard_detected": 10,
+  "fixes_verified": 10,
   "rejected_unsupported": 0,
   "cost": {
-    "calls": 0,
-    "input_tokens": 0,
-    "output_tokens": 0,
-    "latency_s": 0.0,
-    "cost_usd": 0.0
+    "calls": 17,
+    "input_tokens": 40800,
+    "output_tokens": 16951,
+    "latency_s": 267.69,
+    "cost_usd": 0.019481
   },
-  "by_model": {},
+  "by_model": {
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+      "calls": 3,
+      "cost_usd": 0.0
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "calls": 12,
+      "cost_usd": 0.012393
+    },
+    "nvidia/Nemotron-3-Ultra-550b-a55b": {
+      "calls": 2,
+      "cost_usd": 0.0070869999999999995
+    }
+  },
   "bugs": [
     {
       "id": "B01",
@@ -74,9 +87,9 @@
       "description": "Email input relies on placeholder only; no <label>.",
       "axe_detected": false,
       "axe_rules": [],
-      "heard_detected": true,
-      "heard_matched_via": "selector",
-      "fix_verified": true
+      "heard_detected": false,
+      "heard_matched_via": "",
+      "fix_verified": false
     },
     {
       "id": "B06",
@@ -142,9 +155,9 @@
       "description": "Tab widget lacks tablist/tab/tabpanel roles and aria-selected.",
       "axe_detected": false,
       "axe_rules": [],
-      "heard_detected": true,
-      "heard_matched_via": "selector",
-      "fix_verified": true
+      "heard_detected": false,
+      "heard_matched_via": "",
+      "fix_verified": false
     },
     {
       "id": "B12",
@@ -156,9 +169,9 @@
         "heading-order"
       ],
       "heard_detected": true,
-      "heard_matched_via": "selector",
+      "heard_matched_via": "issue_type",
       "fix_verified": true
     }
   ],
-  "matching_rule": "Heard detected = a supported finding whose step element is the bug element (or ancestor/descendant) OR whose issue_type equals the bug category on the same site. axe detected = a violation node that is the bug element (or ancestor/descendant)."
+  "matching_rule": "Heard detected = a supported finding whose step element is the bug element (or ancestor/descendant) OR whose issue_type equals the bug category on the same site. Fix verified = one of those findings has the bug's own category and its patch passed verification (a fix for a different kind of issue on the same element does not count). axe detected = a violation node that is the bug element (or ancestor/descendant)."
 }

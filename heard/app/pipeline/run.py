@@ -25,6 +25,50 @@ def nearest_step(f: Finding, steps: list[dict]) -> dict | None:
     return min(pool, key=lambda s: abs(s["t"] - f.t_start))
 
 
+PAGE_LEVEL = {"tab_widget", "modal_dialog", "heading_skip"}   # verified on the whole widget/page: one fix covers every step
+GROUPED = {"repeated_control", "vague_link"}                 # one fix covers the whole group of identical controls
+
+
+def dedupe(findings: list[Finding], steps: list[dict]) -> tuple[list[Finding], list[dict]]:
+    """Merge findings that one fix would cover (the same tab widget heard at three steps), so each is patched once."""
+    kept, merged, seen = [], [], {}
+    for f in findings:
+        step = nearest_step(f, steps)
+        sel = (step or {}).get("selector") or ""
+        key = (f.issue_type,) if f.issue_type in PAGE_LEVEL else \
+              (f.issue_type, verify.group_selector(sel)) if f.issue_type in GROUPED else (f.issue_type, sel or f.announced_text)
+        if key in seen:
+            merged.append({"finding": f.model_dump(), "duplicate_of": seen[key]})
+        else:
+            seen[key] = f.id; kept.append(f)
+    return kept, merged
+
+
+# Roles an issue type can apply to. A finding on any other role is mistyped, and its type picks the wrong check.
+ROLES = {"vague_link": {"link"}, "missing_alt": {"img", "image"},
+         "missing_label": {"textbox", "combobox", "searchbox", "spinbutton", "listbox"}}
+
+
+def fit_type(f: Finding, step: dict | None) -> Finding:
+    """Correct an issue type that cannot apply to the element. The one mismatch with a clear meaning: a named control
+    whose name does not contain its visible text is a label_in_name bug (e.g. "Continue" on a "Create account" button)."""
+    role = (step or {}).get("role", "")
+    if f.issue_type not in ROLES or not role or role in ROLES[f.issue_type]:
+        return f
+    name, vis = (step.get("name") or "").strip().lower(), (step.get("visible_text") or "").strip().lower()
+    if name and vis and vis not in name:
+        f.evidence = f"{f.evidence} [type corrected: {f.issue_type} cannot apply to a {role}]".strip()
+        f.issue_type = "label_in_name"
+    return f
+
+
+def not_reproduced(site_dir: Path, f: Finding, step: dict | None) -> str:
+    """Reason the finding is not real, or "". If the unpatched page already passes the check for this issue type,
+    there is nothing to fix (a real <button> reported as a fake one), and a "verified fix" would be meaningless."""
+    v = verify.verify_edits(site_dir, [], f.issue_type, (step or {}).get("selector") or "")
+    return "" if not v["passed"] else f"not reproduced: the unpatched page already passes the {f.issue_type} check"
+
+
 def _site_dir(meta: dict) -> Path:
     return ROOT / meta["source_dir"]
 
@@ -64,11 +108,15 @@ def analyze_live(session_id: str, emit: Emit = lambda e: None, out_dir: Path | N
     caps = s.capabilities()
     emit({"stage": "perception", "status": "start", "mode": caps["PERCEPTION_MODE"], "model": s.models["perception"]})
     p = perception.run_perception(llm, d, caps)
-    emit({"stage": "findings", "supported": [f.model_dump() for f in p["supported"]], "rejected": p["rejected"],
+    supported, merged = dedupe([fit_type(f, nearest_step(f, steps)) for f in p["supported"]], steps)
+    emit({"stage": "findings", "supported": [f.model_dump() for f in supported], "rejected": p["rejected"], "merged": len(merged),
           "cost": tracker.summary()["total"]})
-    results = []
-    for f in p["supported"]:
+    results, rejected = [], list(p["rejected"])
+    for f in supported:
         step = nearest_step(f, steps)
+        if reason := not_reproduced(_site_dir(meta), f, step):
+            rejected.append({"finding": f.model_dump(), "reason": reason})
+            emit({"stage": "verify", "finding": f.id, "passed": False, "reason": reason, "role": "precheck"}); continue
         f.wcag_guess = citation.criterion(f.issue_type, f.wcag_guess)
         q = citation.build_query(f.issue_type, f.wcag_guess)
         try:
@@ -79,7 +127,8 @@ def analyze_live(session_id: str, emit: Emit = lambda e: None, out_dir: Path | N
         fx = fix_one(llm, s, tracker, f, step, _site_dir(meta), snippets, out_dir, emit)
         results.append({"finding": f.model_dump(), "step": step, "citations": [c.model_dump() for c in cites], "query": q, **fx})
         emit({"stage": "cost", "cost": tracker.summary()["total"]})
-    out = _package(session_id, meta, "live", caps["PERCEPTION_MODE"], results, p["rejected"], p["raw_count"], tracker.summary(), s, out_dir)
+    out = _package(session_id, meta, "live", caps["PERCEPTION_MODE"], results, rejected, p["raw_count"], tracker.summary(), s, out_dir)
+    out["merged_duplicates"] = merged
     (out_dir / "result.json").write_text(json.dumps(out, indent=2))
     emit({"stage": "done", "result": out})
     return out

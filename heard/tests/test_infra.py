@@ -81,3 +81,18 @@ def test_timeouts_are_retried_and_reported_with_the_retry_count(monkeypatch):
     monkeypatch.setattr(llmmod.httpx, "post", lambda *a, **k: (_ for _ in ()).throw(httpx.ReadTimeout("slow")))
     with pytest.raises(llmmod.LLMError, match="ReadTimeout, 2 retries"):
         llmmod.LLM(s, retries=2, sleep=lambda _: None).chat("perception", "perception", [])
+
+
+def test_thinking_budget_is_merged_into_chat_template_kwargs(monkeypatch):
+    from types import SimpleNamespace
+    from heard.app import llm as llmmod
+    sent = []
+    ok = SimpleNamespace(status_code=200, text="", json=lambda: {"choices": [{"message": {"content": "ok"}}], "usage": {}})
+    monkeypatch.setattr(llmmod.httpx, "post", lambda url, json, timeout, headers: (sent.append(json), ok)[1])
+    s = SimpleNamespace(models={"perception": "omni", "patch": "super"}, prices={}, endpoint=lambda role: ("https://x/v1", "k"),
+                        thinking_budget={"perception": 2048, "patch": None})
+    llm = llmmod.LLM(s)
+    llm.chat("perception", "perception", [], extra={"chat_template_kwargs": {"enable_thinking": True}})
+    llm.chat("patch", "patch", [])
+    assert sent[0]["chat_template_kwargs"] == {"enable_thinking": True, "thinking_token_budget": 2048}
+    assert "chat_template_kwargs" not in sent[1]          # roles without a budget (e.g. Nebius) are untouched

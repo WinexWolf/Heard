@@ -1,126 +1,27 @@
 {
   "session_id": "shop_buggy",
   "site": "shop",
-  "source": "oracle_stub",
-  "perception_mode": "oracle_stub",
+  "source": "live",
+  "perception_mode": "native_av",
   "models": {
-    "perception": "",
-    "patch": "",
-    "escalation": ""
+    "perception": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "patch": "nvidia/nemotron-3-super-120b-a12b",
+    "escalation": "nvidia/Nemotron-3-Ultra-550b-a55b"
   },
-  "generated_at": "2026-10-26T16:54:23",
+  "generated_at": "2026-10-28T22:30:06",
   "label": "simulated screen reader",
   "findings": [
     {
       "finding": {
-        "id": "O-B01",
-        "t_start": 21.53,
-        "t_end": 23.03,
-        "announced_text": "button",
-        "visible_text_or_description": "Icon-only cart button has no accessible name (svg is aria-hidden, no label).",
-        "issue_type": "missing_name",
-        "severity": "high",
-        "wcag_guess": "4.1.2",
-        "evidence": "oracle stub (reference mapping)"
-      },
-      "step": {
-        "i": 7,
-        "t": 21.53,
-        "kind": "focus",
-        "key": "Tab",
-        "selector": "#cart-btn",
-        "html": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"></path><circle cx=\"9\" cy=\"19\" r=\"1.",
-        "name": "",
-        "role": "button",
-        "visible_text": "",
-        "announcement": "button"
-      },
-      "citations": [
-        {
-          "title": "Understanding SC 4.1.2: Name, Role, Value",
-          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
-        }
-      ],
-      "query": "static",
-      "attempts": [
-        {
-          "model": "oracle_stub",
-          "role": "oracle",
-          "passed": true,
-          "reason": "",
-          "edits": [
-            {
-              "file": "index.html",
-              "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\">",
-              "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Open cart, 5 items\">"
-            }
-          ],
-          "rationale": "Reference fix (human-written).",
-          "verification": {
-            "passed": true,
-            "reason": "",
-            "checks": [
-              "accessible name = 'Open cart, 5 items'"
-            ],
-            "new_violations": [],
-            "axe_before": {
-              "button-name": 1,
-              "image-alt": 1
-            },
-            "axe_after": {
-              "image-alt": 1
-            },
-            "after_announcement": "Open cart, 5 items, button"
-          }
-        }
-      ],
-      "fixed": true,
-      "model_used": "oracle_stub",
-      "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
-        "passed": true,
-        "reason": "",
-        "edits": [
-          {
-            "file": "index.html",
-            "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\">",
-            "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Open cart, 5 items\">"
-          }
-        ],
-        "rationale": "Reference fix (human-written).",
-        "verification": {
-          "passed": true,
-          "reason": "",
-          "checks": [
-            "accessible name = 'Open cart, 5 items'"
-          ],
-          "new_violations": [],
-          "axe_before": {
-            "button-name": 1,
-            "image-alt": 1
-          },
-          "axe_after": {
-            "image-alt": 1
-          },
-          "after_announcement": "Open cart, 5 items, button"
-        }
-      },
-      "bug_id": "B01",
-      "before_audio": "sessions/shop_buggy/step_7_before.wav",
-      "after_audio": "runs/shop_buggy/after_O-B01.wav"
-    },
-    {
-      "finding": {
-        "id": "O-B02",
+        "id": "F1",
         "t_start": 3.86,
-        "t_end": 5.359999999999999,
+        "t_end": 5.32,
         "announced_text": "graphic",
-        "visible_text_or_description": "Hero image has no alt attribute.",
+        "visible_text_or_description": "A light blue banner with the text \"Spring sale: pixel keyboards\" (likely a decorative image).",
         "issue_type": "missing_alt",
-        "severity": "high",
+        "severity": "medium",
         "wcag_guess": "1.1.1",
-        "evidence": "oracle stub (reference mapping)"
+        "evidence": "Screen reader announced \"graphic\" while the visible element is a decorative image without an accessible name."
       },
       "step": {
         "i": 1,
@@ -136,30 +37,38 @@
       },
       "citations": [
         {
-          "title": "Understanding SC 1.1.1: Non-text Content",
-          "url": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html"
+          "title": "H37: Using alt attributes on img elements | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/html/H37"
+        },
+        {
+          "title": "F39: Failure of Success Criterion 1.1.1 due to providing a text alternative that is not null (e.g., alt=\"spacer\" or alt=\"image\") for images that should be ignored by assistive technology | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/failures/F39"
+        },
+        {
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 1.1.1 Non-text Content img alt text technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
-          "passed": true,
-          "reason": "",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "img still has no alt text",
           "edits": [
             {
               "file": "index.html",
               "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
-              "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale banner: pixel keyboards\">"
+              "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"\">"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "Add an empty alt attribute to the decorative hero image so assistive technologies ignore it, meeting WCAG 1.1.1.",
           "verification": {
-            "passed": true,
-            "reason": "",
+            "passed": false,
+            "reason": "img still has no alt text",
             "checks": [
-              "alt = 'Spring sale banner: pixel keyboards'"
+              "alt = ''"
             ],
             "new_violations": [],
             "axe_before": {
@@ -169,30 +78,90 @@
             "axe_after": {
               "button-name": 1
             },
-            "after_announcement": "Spring sale banner: pixel keyboards, graphic"
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "img still has no alt text",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
+              "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"\">"
+            }
+          ],
+          "rationale": "Add an empty alt attribute to the decorative hero image so assistive technologies ignore it.",
+          "verification": {
+            "passed": false,
+            "reason": "img still has no alt text",
+            "checks": [
+              "alt = ''"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "button-name": 1
+            },
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "role": "escalation",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
+              "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale: pixel keyboards\">"
+            }
+          ],
+          "rationale": "The hero banner contains promotional text \"Spring sale: pixel keyboards\" not repeated elsewhere, so it needs a descriptive alt attribute per WCAG 1.1.1 rather than an empty alt.",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "alt = 'Spring sale: pixel keyboards'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "button-name": 1
+            },
+            "after_announcement": "Spring sale: pixel keyboards, graphic"
           }
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/Nemotron-3-Ultra-550b-a55b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "role": "escalation",
         "passed": true,
         "reason": "",
         "edits": [
           {
             "file": "index.html",
             "old_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\">",
-            "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale banner: pixel keyboards\">"
+            "new_str": "<img class=\"hero\" src=\"hero.svg\" width=\"640\" height=\"160\" alt=\"Spring sale: pixel keyboards\">"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "The hero banner contains promotional text \"Spring sale: pixel keyboards\" not repeated elsewhere, so it needs a descriptive alt attribute per WCAG 1.1.1 rather than an empty alt.",
         "verification": {
           "passed": true,
           "reason": "",
           "checks": [
-            "alt = 'Spring sale banner: pixel keyboards'"
+            "alt = 'Spring sale: pixel keyboards'"
           ],
           "new_violations": [],
           "axe_before": {
@@ -202,24 +171,129 @@
           "axe_after": {
             "button-name": 1
           },
-          "after_announcement": "Spring sale banner: pixel keyboards, graphic"
+          "after_announcement": "Spring sale: pixel keyboards, graphic"
         }
       },
-      "bug_id": "B02",
       "before_audio": "sessions/shop_buggy/step_1_before.wav",
-      "after_audio": "runs/shop_buggy/after_O-B02.wav"
+      "after_audio": "runs/shop_buggy/after_F1.wav"
     },
     {
       "finding": {
-        "id": "O-B04",
+        "id": "F2",
+        "t_start": 21.53,
+        "t_end": 23.18,
+        "announced_text": "button",
+        "visible_text_or_description": "The \"Add Pixel 60\" button has visible text \"Add Pixel 60\" but the screen reader only said \"button\".",
+        "issue_type": "missing_name",
+        "severity": "medium",
+        "wcag_guess": "4.1.2",
+        "evidence": "Screen reader announced only the role \"button\" without the accessible name, despite the button having visible text."
+      },
+      "step": {
+        "i": 7,
+        "t": 21.53,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "#cart-btn",
+        "html": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"></path><circle cx=\"9\" cy=\"19\" r=\"1.",
+        "name": "",
+        "role": "button",
+        "visible_text": "",
+        "announcement": "button"
+      },
+      "citations": [
+        {
+          "title": "ARIA14: Using aria-label to provide an accessible name where a visible label cannot be used | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA14"
+        },
+        {
+          "title": "Understanding Success Criterion 2.4.6: Headings and Labels | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html"
+        },
+        {
+          "title": "Understanding Success Criterion 3.3.2: Labels or Instructions | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html"
+        }
+      ],
+      "query": "WCAG 2.2 4.1.2 Name, Role, Value icon button aria-label accessible name technique",
+      "attempts": [
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"9\" cy=\"19\" r=\"1.5\"/><circle cx=\"17\" cy=\"19\" r=\"1.5\"/></svg></button>",
+              "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Cart\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"9\" cy=\"19\" r=\"1.5\"/><circle cx=\"17\" cy=\"19\" r=\"1.5\"/></svg></button>"
+            }
+          ],
+          "rationale": "Add an aria-label to the cart button so screen readers announce its purpose, fixing the missing accessible name.",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "accessible name = 'Cart'"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "button-name": 1,
+              "image-alt": 1
+            },
+            "axe_after": {
+              "image-alt": 1
+            },
+            "after_announcement": "Cart, button"
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
+      "final": {
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"9\" cy=\"19\" r=\"1.5\"/><circle cx=\"17\" cy=\"19\" r=\"1.5\"/></svg></button>",
+            "new_str": "<button id=\"cart-btn\" class=\"icon-btn\" type=\"button\" aria-label=\"Cart\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h2l2.5 11h10L20 7H7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"9\" cy=\"19\" r=\"1.5\"/><circle cx=\"17\" cy=\"19\" r=\"1.5\"/></svg></button>"
+          }
+        ],
+        "rationale": "Add an aria-label to the cart button so screen readers announce its purpose, fixing the missing accessible name.",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "accessible name = 'Cart'"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "button-name": 1,
+            "image-alt": 1
+          },
+          "axe_after": {
+            "image-alt": 1
+          },
+          "after_announcement": "Cart, button"
+        }
+      },
+      "before_audio": "sessions/shop_buggy/step_7_before.wav",
+      "after_audio": "runs/shop_buggy/after_F2.wav"
+    },
+    {
+      "finding": {
+        "id": "F3",
         "t_start": 23.18,
-        "t_end": 24.68,
+        "t_end": 25.63,
         "announced_text": "Learn more, link",
-        "visible_text_or_description": "Three links all read 'Learn more' with no product context.",
+        "visible_text_or_description": "A link with the text \"Learn more\" (generic).",
         "issue_type": "vague_link",
-        "severity": "high",
+        "severity": "low",
         "wcag_guess": "2.4.4",
-        "evidence": "oracle stub (reference mapping)"
+        "evidence": "The link text \"Learn more\" is generic and does not describe the destination, matching the vague_link criterion."
       },
       "step": {
         "i": 8,
@@ -235,15 +309,23 @@
       },
       "citations": [
         {
-          "title": "Understanding SC 2.4.4: Link Purpose (In Context)",
+          "title": "H78: Identifying the purpose of a link using link text combined with its enclosing paragraph | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/html/H78"
+        },
+        {
+          "title": "Understanding Success Criterion 2.4.4: Link Purpose (In Context) | WAI | W3C",
           "url": "https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html"
+        },
+        {
+          "title": "G53: Identifying the purpose of a link using link text combined with the text of the enclosing sentence | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/general/G53"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 2.4.4 Link Purpose (In Context) link text purpose context technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
           "passed": true,
           "reason": "",
           "edits": [
@@ -263,7 +345,7 @@
               "new_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more<span class=\"sr-only\"> about Pixel TKL</span></a>"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "",
           "verification": {
             "passed": true,
             "reason": "",
@@ -284,10 +366,10 @@
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
         "passed": true,
         "reason": "",
         "edits": [
@@ -307,7 +389,7 @@
             "new_str": "<a class=\"learn-more\" href=\"#pixel-tkl\">Learn more<span class=\"sr-only\"> about Pixel TKL</span></a>"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "",
         "verification": {
           "passed": true,
           "reason": "",
@@ -326,21 +408,20 @@
           "after_announcement": "Learn more about Pixel 60, link"
         }
       },
-      "bug_id": "B04",
       "before_audio": "sessions/shop_buggy/step_8_before.wav",
-      "after_audio": "runs/shop_buggy/after_O-B04.wav"
+      "after_audio": "runs/shop_buggy/after_F3.wav"
     },
     {
       "finding": {
-        "id": "O-B10",
+        "id": "F4",
         "t_start": 40.09,
-        "t_end": 41.59,
+        "t_end": 51.05,
         "announced_text": "Edit, button",
-        "visible_text_or_description": "Five identical 'Edit' buttons with no indication of which cart item they edit.",
+        "visible_text_or_description": "Multiple \"Edit\" buttons for different cart items, each announced identically.",
         "issue_type": "repeated_control",
-        "severity": "high",
+        "severity": "medium",
         "wcag_guess": "2.4.6",
-        "evidence": "oracle stub (reference mapping)"
+        "evidence": "The same label \"Edit, button\" is spoken for several distinct controls (different cart items), violating the repeated_control rule."
       },
       "step": {
         "i": 14,
@@ -356,45 +437,53 @@
       },
       "citations": [
         {
-          "title": "Understanding SC 2.4.6: Headings and Labels",
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
+        },
+        {
+          "title": "Understanding Success Criterion 2.4.6: Headings and Labels | WAI | W3C",
           "url": "https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html"
+        },
+        {
+          "title": "How to Meet WCAG (Quickref Reference)",
+          "url": "https://www.w3.org/WAI/WCAG22/quickref"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 2.4.6 Headings and Labels aria-label distinguish repeated buttons technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
           "passed": true,
           "reason": "",
           "edits": [
             {
               "file": "index.html",
-              "old_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">",
-              "new_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">"
+              "old_str": "<li class=\"cart-item\"><span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+              "new_str": "<li class=\"cart-item\"><span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">Edit</button>"
             },
             {
               "file": "index.html",
-              "old_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">",
-              "new_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">"
+              "old_str": "<li class=\"cart-item\"><span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+              "new_str": "<li class=\"cart-item\"><span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">Edit</button>"
             },
             {
               "file": "index.html",
-              "old_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">",
-              "new_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">"
+              "old_str": "<li class=\"cart-item\"><span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+              "new_str": "<li class=\"cart-item\"><span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">Edit</button>"
             },
             {
               "file": "index.html",
-              "old_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">",
-              "new_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">"
+              "old_str": "<li class=\"cart-item\"><span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+              "new_str": "<li class=\"cart-item\"><span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">Edit</button>"
             },
             {
               "file": "index.html",
-              "old_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">",
-              "new_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">"
+              "old_str": "<li class=\"cart-item\"><span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+              "new_str": "<li class=\"cart-item\"><span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">Edit</button>"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "Each Edit button now has an accessible name that identifies the cart item it belongs to, eliminating duplicate announcements and satisfying WCAG 2.4.6.",
           "verification": {
             "passed": true,
             "reason": "",
@@ -415,40 +504,40 @@
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
         "passed": true,
         "reason": "",
         "edits": [
           {
             "file": "index.html",
-            "old_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">",
-            "new_str": "<span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">"
+            "old_str": "<li class=\"cart-item\"><span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+            "new_str": "<li class=\"cart-item\"><span>Pixel 60 x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 60\">Edit</button>"
           },
           {
             "file": "index.html",
-            "old_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">",
-            "new_str": "<span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">"
+            "old_str": "<li class=\"cart-item\"><span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+            "new_str": "<li class=\"cart-item\"><span>Pixel 75 x 2</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Pixel 75\">Edit</button>"
           },
           {
             "file": "index.html",
-            "old_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">",
-            "new_str": "<span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">"
+            "old_str": "<li class=\"cart-item\"><span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+            "new_str": "<li class=\"cart-item\"><span>Keycap set x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Keycap set\">Edit</button>"
           },
           {
             "file": "index.html",
-            "old_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">",
-            "new_str": "<span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">"
+            "old_str": "<li class=\"cart-item\"><span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+            "new_str": "<li class=\"cart-item\"><span>USB-C cable x 3</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit USB-C cable\">Edit</button>"
           },
           {
             "file": "index.html",
-            "old_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">",
-            "new_str": "<span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">"
+            "old_str": "<li class=\"cart-item\"><span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\">Edit</button>",
+            "new_str": "<li class=\"cart-item\"><span>Switch pack x 1</span><button type=\"button\" class=\"edit-btn\" aria-label=\"Edit Switch pack\">Edit</button>"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "Each Edit button now has an accessible name that identifies the cart item it belongs to, eliminating duplicate announcements and satisfying WCAG 2.4.6.",
         "verification": {
           "passed": true,
           "reason": "",
@@ -467,26 +556,172 @@
           "after_announcement": "Edit Pixel 60, button"
         }
       },
-      "bug_id": "B10",
       "before_audio": "sessions/shop_buggy/step_14_before.wav",
-      "after_audio": "runs/shop_buggy/after_O-B10.wav"
+      "after_audio": "runs/shop_buggy/after_F4.wav"
     }
   ],
   "rejected_unsupported": [],
   "raw_finding_count": 4,
   "cost": {
     "total": {
-      "calls": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "latency_s": 0,
-      "cost_usd": 0,
+      "calls": 7,
+      "input_tokens": 20129,
+      "output_tokens": 8093,
+      "latency_s": 114.488,
+      "cost_usd": 0.010846,
       "cost_known": true,
-      "tavily_calls": 0
+      "tavily_calls": 4
     },
-    "by_stage": {},
-    "by_model": {},
-    "calls": [],
-    "tavily": []
-  }
+    "by_stage": {
+      "perception": {
+        "calls": 1,
+        "input_tokens": 10781,
+        "output_tokens": 2595,
+        "latency_s": 75.783,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "patch": {
+        "calls": 5,
+        "input_tokens": 7734,
+        "output_tokens": 4563,
+        "latency_s": 35.156,
+        "cost_usd": 0.006426,
+        "cost_known": true
+      },
+      "escalation": {
+        "calls": 1,
+        "input_tokens": 1614,
+        "output_tokens": 935,
+        "latency_s": 3.549,
+        "cost_usd": 0.004419,
+        "cost_known": true
+      }
+    },
+    "by_model": {
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+        "calls": 1,
+        "input_tokens": 10781,
+        "output_tokens": 2595,
+        "latency_s": 75.783,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 5,
+        "input_tokens": 7734,
+        "output_tokens": 4563,
+        "latency_s": 35.156,
+        "cost_usd": 0.006426,
+        "cost_known": true
+      },
+      "nvidia/Nemotron-3-Ultra-550b-a55b": {
+        "calls": 1,
+        "input_tokens": 1614,
+        "output_tokens": 935,
+        "latency_s": 3.549,
+        "cost_usd": 0.004419,
+        "cost_known": true
+      }
+    },
+    "calls": [
+      {
+        "stage": "perception",
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+        "input_tokens": 10781,
+        "output_tokens": 2595,
+        "latency_s": 75.783,
+        "cost_usd": 0.0,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1526,
+        "output_tokens": 434,
+        "latency_s": 3.331,
+        "cost_usd": 0.0008484000000000001,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1614,
+        "output_tokens": 754,
+        "latency_s": 6.162,
+        "cost_usd": 0.0011627999999999999,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "escalation",
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "input_tokens": 1614,
+        "output_tokens": 935,
+        "latency_s": 3.549,
+        "cost_usd": 0.004419,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1587,
+        "output_tokens": 842,
+        "latency_s": 5.859,
+        "cost_usd": 0.0012339,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1524,
+        "output_tokens": 1009,
+        "latency_s": 6.889,
+        "cost_usd": 0.0013652999999999998,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1483,
+        "output_tokens": 1524,
+        "latency_s": 12.915,
+        "cost_usd": 0.0018165,
+        "ok": true,
+        "note": ""
+      }
+    ],
+    "tavily": [
+      {
+        "query": "WCAG 2.2 1.1.1 Non-text Content img alt text technique",
+        "latency_s": 0.298,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.2 Name, Role, Value icon button aria-label accessible name technique",
+        "latency_s": 0.249,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 2.4.4 Link Purpose (In Context) link text purpose context technique",
+        "latency_s": 0.255,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 2.4.6 Headings and Labels aria-label distinguish repeated buttons technique",
+        "latency_s": 0.261,
+        "results": 3,
+        "ok": true
+      }
+    ]
+  },
+  "merged_duplicates": []
 }

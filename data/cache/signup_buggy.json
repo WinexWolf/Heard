@@ -1,124 +1,127 @@
 {
   "session_id": "signup_buggy",
   "site": "signup",
-  "source": "oracle_stub",
-  "perception_mode": "oracle_stub",
+  "source": "live",
+  "perception_mode": "native_av",
   "models": {
-    "perception": "",
-    "patch": "",
-    "escalation": ""
+    "perception": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "patch": "nvidia/nemotron-3-super-120b-a12b",
+    "escalation": "nvidia/Nemotron-3-Ultra-550b-a55b"
   },
-  "generated_at": "2026-10-26T16:54:33",
+  "generated_at": "2026-10-28T22:32:06",
   "label": "simulated screen reader",
   "findings": [
     {
       "finding": {
-        "id": "O-B03",
-        "t_start": 7.25,
-        "t_end": 8.75,
-        "announced_text": "Email address, edit text",
-        "visible_text_or_description": "Email input relies on placeholder only; no <label>.",
-        "issue_type": "missing_label",
+        "id": "F1",
+        "t_start": 19.54,
+        "t_end": 20.0,
+        "announced_text": "Continue, button",
+        "visible_text_or_description": "Create account",
+        "issue_type": "label_in_name",
         "severity": "high",
-        "wcag_guess": "1.3.1",
-        "evidence": "oracle stub (reference mapping)"
+        "wcag_guess": "2.5.3",
+        "evidence": "Screen reader announced \"Continue, button\" while the visible button text is \"Create account\", indicating a mismatch between accessible name and visible label."
       },
       "step": {
-        "i": 2,
-        "t": 7.25,
+        "i": 6,
+        "t": 19.54,
         "kind": "focus",
         "key": "Tab",
-        "selector": "#email",
-        "html": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\" style=\"\">",
-        "name": "Email address",
-        "role": "textbox",
-        "visible_text": "",
-        "announcement": "Email address, edit text"
+        "selector": "#submit-btn",
+        "html": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
+        "name": "Continue",
+        "role": "button",
+        "visible_text": "Create account",
+        "announcement": "Continue, button"
       },
       "citations": [
         {
-          "title": "Understanding SC 1.3.1: Info and Relationships",
-          "url": "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html"
+          "title": "ARIA8: Using aria-label for link purpose | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA8"
+        },
+        {
+          "title": "Understanding Success Criterion 2.5.3: Label in Name | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html"
+        },
+        {
+          "title": "Visible label is part of accessible name[proposed] | ACT Rule | WAI | W3C",
+          "url": "https://www.w3.org/WAI/standards-guidelines/act/rules/2ee8b8/proposed"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 2.5.3 Label in Name label in name aria-label visible text technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
           "passed": true,
           "reason": "",
           "edits": [
             {
               "file": "index.html",
-              "old_str": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\">",
-              "new_str": "<label for=\"email\">Email address</label>\n<input id=\"email\" type=\"email\" placeholder=\"you@example.com\" autocomplete=\"email\">"
+              "old_str": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
+              "new_str": "<button type=\"submit\" id=\"submit-btn\">Create account</button>"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "",
           "verification": {
             "passed": true,
             "reason": "",
             "checks": [
-              "programmatic label present = True; accessible name = 'Email address'"
+              "visible='create account' name='create account'"
             ],
             "new_violations": [],
             "axe_before": {
               "label-content-name-mismatch": 1
             },
-            "axe_after": {
-              "label-content-name-mismatch": 1
-            },
-            "after_announcement": "Email address, edit text"
+            "axe_after": {},
+            "after_announcement": "Create account, button"
           }
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
         "passed": true,
         "reason": "",
         "edits": [
           {
             "file": "index.html",
-            "old_str": "<input id=\"email\" type=\"email\" placeholder=\"Email address\" autocomplete=\"email\">",
-            "new_str": "<label for=\"email\">Email address</label>\n<input id=\"email\" type=\"email\" placeholder=\"you@example.com\" autocomplete=\"email\">"
+            "old_str": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
+            "new_str": "<button type=\"submit\" id=\"submit-btn\">Create account</button>"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "",
         "verification": {
           "passed": true,
           "reason": "",
           "checks": [
-            "programmatic label present = True; accessible name = 'Email address'"
+            "visible='create account' name='create account'"
           ],
           "new_violations": [],
           "axe_before": {
             "label-content-name-mismatch": 1
           },
-          "axe_after": {
-            "label-content-name-mismatch": 1
-          },
-          "after_announcement": "Email address, edit text"
+          "axe_after": {},
+          "after_announcement": "Create account, button"
         }
       },
-      "bug_id": "B03",
-      "before_audio": "sessions/signup_buggy/step_2_before.wav",
-      "after_audio": "cache/signup_buggy/after_O-B03.wav"
+      "before_audio": "sessions/signup_buggy/step_6_before.wav",
+      "after_audio": "cache/signup_buggy/after_F1.wav"
     },
     {
       "finding": {
-        "id": "O-B06",
+        "id": "F2",
         "t_start": 22.07,
-        "t_end": 23.57,
-        "announced_text": "",
-        "visible_text_or_description": "Validation error text is injected without role=alert or aria-live.",
+        "t_end": 22.5,
+        "announced_text": "(silence)",
+        "visible_text_or_description": "Enter a valid email address.",
         "issue_type": "error_not_announced",
         "severity": "high",
         "wcag_guess": "4.1.3",
-        "evidence": "oracle stub (reference mapping)"
+        "evidence": "Error message \"Enter a valid email address.\" appears on screen but the user heard no spoken announcement."
       },
       "step": {
         "i": 7,
@@ -138,15 +141,23 @@
       },
       "citations": [
         {
-          "title": "Understanding SC 4.1.3: Status Messages",
+          "title": "Understanding Success Criterion 4.1.3: Status Messages | WAI | W3C",
           "url": "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html"
+        },
+        {
+          "title": "How to Meet WCAG (Quickref Reference)",
+          "url": "https://www.w3.org/WAI/WCAG22/quickref"
+        },
+        {
+          "title": "ARIA19: Using ARIA role=alert or Live Regions to Identify Errors | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA19"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 4.1.3 Status Messages role=alert live region error message technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
           "passed": true,
           "reason": "",
           "edits": [
@@ -156,7 +167,7 @@
               "new_str": "<div id=\"email-error\" class=\"error\" role=\"alert\"></div>"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "",
           "verification": {
             "passed": true,
             "reason": "",
@@ -175,10 +186,10 @@
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
         "passed": true,
         "reason": "",
         "edits": [
@@ -188,7 +199,7 @@
             "new_str": "<div id=\"email-error\" class=\"error\" role=\"alert\"></div>"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "",
         "verification": {
           "passed": true,
           "reason": "",
@@ -205,114 +216,20 @@
           "after_announcement": "Continue, button"
         }
       },
-      "bug_id": "B06",
       "before_audio": null,
-      "after_audio": "cache/signup_buggy/after_O-B06.wav"
+      "after_audio": "cache/signup_buggy/after_F2.wav"
     },
     {
       "finding": {
-        "id": "O-B09",
-        "t_start": 19.54,
-        "t_end": 21.04,
-        "announced_text": "Continue, button",
-        "visible_text_or_description": "aria-label 'Continue' contradicts visible text 'Create account' (WCAG 2.5.3).",
-        "issue_type": "label_in_name",
-        "severity": "high",
-        "wcag_guess": "2.5.3",
-        "evidence": "oracle stub (reference mapping)"
-      },
-      "step": {
-        "i": 6,
-        "t": 19.54,
-        "kind": "focus",
-        "key": "Tab",
-        "selector": "#submit-btn",
-        "html": "<button type=\"submit\" id=\"submit-btn\" aria-label=\"Continue\">Create account</button>",
-        "name": "Continue",
-        "role": "button",
-        "visible_text": "Create account",
-        "announcement": "Continue, button"
-      },
-      "citations": [
-        {
-          "title": "Understanding SC 2.5.3: Label in Name",
-          "url": "https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html"
-        }
-      ],
-      "query": "static",
-      "attempts": [
-        {
-          "model": "oracle_stub",
-          "role": "oracle",
-          "passed": true,
-          "reason": "",
-          "edits": [
-            {
-              "file": "index.html",
-              "old_str": "aria-label=\"Continue\">Create account",
-              "new_str": ">Create account"
-            }
-          ],
-          "rationale": "Reference fix (human-written).",
-          "verification": {
-            "passed": true,
-            "reason": "",
-            "checks": [
-              "visible='create account' name='create account'"
-            ],
-            "new_violations": [],
-            "axe_before": {
-              "label-content-name-mismatch": 1
-            },
-            "axe_after": {},
-            "after_announcement": "Create account, button"
-          }
-        }
-      ],
-      "fixed": true,
-      "model_used": "oracle_stub",
-      "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
-        "passed": true,
-        "reason": "",
-        "edits": [
-          {
-            "file": "index.html",
-            "old_str": "aria-label=\"Continue\">Create account",
-            "new_str": ">Create account"
-          }
-        ],
-        "rationale": "Reference fix (human-written).",
-        "verification": {
-          "passed": true,
-          "reason": "",
-          "checks": [
-            "visible='create account' name='create account'"
-          ],
-          "new_violations": [],
-          "axe_before": {
-            "label-content-name-mismatch": 1
-          },
-          "axe_after": {},
-          "after_announcement": "Create account, button"
-        }
-      },
-      "bug_id": "B09",
-      "before_audio": "sessions/signup_buggy/step_6_before.wav",
-      "after_audio": "cache/signup_buggy/after_O-B09.wav"
-    },
-    {
-      "finding": {
-        "id": "O-B11",
+        "id": "F3",
         "t_start": 13.02,
-        "t_end": 14.52,
+        "t_end": 16.28,
         "announced_text": "I agree to the terms, clickable",
-        "visible_text_or_description": "Custom checkbox div has no role or checked state.",
+        "visible_text_or_description": "I agree to the terms (checkbox)",
         "issue_type": "missing_state",
-        "severity": "high",
+        "severity": "medium",
         "wcag_guess": "4.1.2",
-        "evidence": "oracle stub (reference mapping)"
+        "evidence": "Checkbox is announced as \"clickable\" without indicating its checked state, even though it becomes checked later."
       },
       "step": {
         "i": 4,
@@ -328,35 +245,38 @@
       },
       "citations": [
         {
-          "title": "Understanding SC 4.1.2: Name, Role, Value",
-          "url": "https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html"
+          "title": "Understanding Success Criterion 4.1.2: Name, Role, Value | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html"
+        },
+        {
+          "title": "Understanding Success Criterion 4.1.2  | Understanding WCAG 2.0",
+          "url": "https://www.w3.org/TR/UNDERSTANDING-WCAG20/ensure-compat-rsv.html"
+        },
+        {
+          "title": "How to Meet WCAG (Quickref Reference)",
+          "url": "https://www.w3.org/WAI/WCAG22/quickref"
         }
       ],
-      "query": "static",
+      "query": "WCAG 2.2 4.1.2 Name, Role, Value custom checkbox role=checkbox aria-checked technique",
       "attempts": [
         {
-          "model": "oracle_stub",
-          "role": "oracle",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
           "passed": true,
           "reason": "",
           "edits": [
             {
               "file": "index.html",
-              "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\">",
-              "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\" aria-labelledby=\"terms-label\">"
-            },
-            {
-              "file": "index.html",
-              "old_str": "<span>I agree to the terms</span>",
-              "new_str": "<span id=\"terms-label\">I agree to the terms</span>"
+              "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\"><span class=\"box\"></span><span>I agree to the terms</span></div>",
+              "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\"><span class=\"box\"></span><span>I agree to the terms</span></div>"
             },
             {
               "file": "app.js",
               "old_str": "const toggle = () => terms.classList.toggle('on');",
-              "new_str": "const toggle = () => { terms.classList.toggle('on'); terms.setAttribute('aria-checked', terms.classList.contains('on') ? 'true' : 'false'); };"
+              "new_str": "const toggle = () => { const isOn = terms.classList.toggle('on'); terms.setAttribute('aria-checked', isOn); };"
             }
           ],
-          "rationale": "Reference fix (human-written).",
+          "rationale": "Added role='checkbox' and aria-checked='false' to expose the checkbox role and its state. Updated the toggle function to also set aria-checked based on the 'on' class so the state is communicated to assistive technology when the user interacts with the control.",
           "verification": {
             "passed": true,
             "reason": "",
@@ -376,30 +296,25 @@
         }
       ],
       "fixed": true,
-      "model_used": "oracle_stub",
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
       "final": {
-        "model": "oracle_stub",
-        "role": "oracle",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
         "passed": true,
         "reason": "",
         "edits": [
           {
             "file": "index.html",
-            "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\">",
-            "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\" aria-labelledby=\"terms-label\">"
-          },
-          {
-            "file": "index.html",
-            "old_str": "<span>I agree to the terms</span>",
-            "new_str": "<span id=\"terms-label\">I agree to the terms</span>"
+            "old_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\"><span class=\"box\"></span><span>I agree to the terms</span></div>",
+            "new_str": "<div id=\"terms\" class=\"checkbox\" tabindex=\"0\" role=\"checkbox\" aria-checked=\"false\"><span class=\"box\"></span><span>I agree to the terms</span></div>"
           },
           {
             "file": "app.js",
             "old_str": "const toggle = () => terms.classList.toggle('on');",
-            "new_str": "const toggle = () => { terms.classList.toggle('on'); terms.setAttribute('aria-checked', terms.classList.contains('on') ? 'true' : 'false'); };"
+            "new_str": "const toggle = () => { const isOn = terms.classList.toggle('on'); terms.setAttribute('aria-checked', isOn); };"
           }
         ],
-        "rationale": "Reference fix (human-written).",
+        "rationale": "Added role='checkbox' and aria-checked='false' to expose the checkbox role and its state. Updated the toggle function to also set aria-checked based on the 'on' class so the state is communicated to assistive technology when the user interacts with the control.",
         "verification": {
           "passed": true,
           "reason": "",
@@ -417,26 +332,120 @@
           "after_announcement": "I agree to the terms, check box, not checked"
         }
       },
-      "bug_id": "B11",
       "before_audio": "sessions/signup_buggy/step_4_before.wav",
-      "after_audio": "cache/signup_buggy/after_O-B11.wav"
+      "after_audio": "cache/signup_buggy/after_F3.wav"
     }
   ],
   "rejected_unsupported": [],
-  "raw_finding_count": 4,
+  "raw_finding_count": 3,
   "cost": {
     "total": {
-      "calls": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "latency_s": 0,
-      "cost_usd": 0,
+      "calls": 4,
+      "input_tokens": 8362,
+      "output_tokens": 4012,
+      "latency_s": 79.668,
+      "cost_usd": 0.00241,
       "cost_known": true,
-      "tavily_calls": 0
+      "tavily_calls": 3
     },
-    "by_stage": {},
-    "by_model": {},
-    "calls": [],
-    "tavily": []
-  }
+    "by_stage": {
+      "perception": {
+        "calls": 1,
+        "input_tokens": 5078,
+        "output_tokens": 2429,
+        "latency_s": 66.978,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "patch": {
+        "calls": 3,
+        "input_tokens": 3284,
+        "output_tokens": 1583,
+        "latency_s": 12.69,
+        "cost_usd": 0.00241,
+        "cost_known": true
+      }
+    },
+    "by_model": {
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+        "calls": 1,
+        "input_tokens": 5078,
+        "output_tokens": 2429,
+        "latency_s": 66.978,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 3,
+        "input_tokens": 3284,
+        "output_tokens": 1583,
+        "latency_s": 12.69,
+        "cost_usd": 0.00241,
+        "cost_known": true
+      }
+    },
+    "calls": [
+      {
+        "stage": "perception",
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+        "input_tokens": 5078,
+        "output_tokens": 2429,
+        "latency_s": 66.978,
+        "cost_usd": 0.0,
+        "ok": true,
+        "note": "1 retries"
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1106,
+        "output_tokens": 467,
+        "latency_s": 3.929,
+        "cost_usd": 0.0007521,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1078,
+        "output_tokens": 361,
+        "latency_s": 3.473,
+        "cost_usd": 0.0006483,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1100,
+        "output_tokens": 755,
+        "latency_s": 5.288,
+        "cost_usd": 0.0010095,
+        "ok": true,
+        "note": ""
+      }
+    ],
+    "tavily": [
+      {
+        "query": "WCAG 2.2 2.5.3 Label in Name label in name aria-label visible text technique",
+        "latency_s": 2.524,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.3 Status Messages role=alert live region error message technique",
+        "latency_s": 0.261,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.2 Name, Role, Value custom checkbox role=checkbox aria-checked technique",
+        "latency_s": 0.256,
+        "results": 3,
+        "ok": true
+      }
+    ]
+  },
+  "merged_duplicates": []
 }

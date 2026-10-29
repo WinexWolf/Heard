@@ -12,10 +12,14 @@ from .. import a11y
 from .patch import apply_edits, PatchError
 
 LAST_SEG = re.compile(r"[^>]+$")
+# Appended when the missing behaviour lives in a script: the HTML alone cannot make state follow the user.
+IN_JS = " (this changes at runtime: update the click/keydown handler in the site's .js file, not only the HTML)"
 
 
 def group_selector(sel: str) -> str:
-    seg = LAST_SEG.search(sel).group(0).strip()
+    m = LAST_SEG.search(sel or "")
+    if not m: return ""
+    seg = m.group(0).strip()
     return re.sub(r":nth-of-type\(\d+\)", "", seg)
 
 
@@ -34,7 +38,7 @@ def _info(page, h): return a11y.ax_info(page, h)
 
 def check_finding(page: Page, issue_type: str, selector: str) -> tuple[bool, str, list[str]]:
     checks: list[str] = []
-    el = page.query_selector(selector)
+    el = page.query_selector(selector) if selector else None
     grp = [h for h in page.query_selector_all(group_selector(selector))] if selector else []
     if issue_type not in ("modal_dialog", "tab_widget", "heading_skip") and el is None:
         return False, f"element for selector {selector!r} no longer found", checks
@@ -83,7 +87,7 @@ def check_finding(page: Page, issue_type: str, selector: str) -> tuple[bool, str
             return False, "no checkbox role / aria-checked state exposed", checks
         before = el.get_attribute("aria-checked"); el.click(); after = el.get_attribute("aria-checked")
         checks.append(f"after click aria-checked {before}->{after}")
-        return before != after, "" if before != after else "aria-checked does not update when toggled", checks
+        return before != after, "" if before != after else "aria-checked does not update when toggled" + IN_JS, checks
     if issue_type == "heading_skip":
         lv = page.evaluate("""()=>[...document.querySelectorAll('h1,h2,h3,h4,h5,h6,[role=heading]')].filter(h=>h.offsetParent!==null)
             .map(h=>+(h.getAttribute('aria-level')||h.tagName.slice(1)))""")
@@ -97,7 +101,7 @@ def check_finding(page: Page, issue_type: str, selector: str) -> tuple[bool, str
         if None in sel or sel.count("true") != 1: return False, "tabs lack aria-selected (exactly one true)", checks
         tabs[1].click(); sel2 = [t.get_attribute("aria-selected") for t in tabs]; checks.append(f"after click {sel2}")
         ok = sel2[1] == "true" and sel2.count("true") == 1
-        return ok, "" if ok else "aria-selected does not follow the active tab", checks
+        return ok, "" if ok else "aria-selected does not follow the active tab" + IN_JS, checks
     if issue_type == "modal_dialog":
         dlg = page.query_selector("[role=dialog],[role=alertdialog]")
         if not dlg: return False, "no element with role=dialog", checks
@@ -109,7 +113,7 @@ def check_finding(page: Page, issue_type: str, selector: str) -> tuple[bool, str
                 inside = page.evaluate("(d)=>d.contains(document.activeElement)", dlg)
                 checks.append(f"after opening, focus inside dialog = {inside}")
                 if not nm: return False, "dialog has no accessible name", checks
-                return bool(inside), "" if inside else "focus is not moved into the dialog when it opens", checks
+                return bool(inside), "" if inside else "focus is not moved into the dialog when it opens" + IN_JS, checks
         return False, "could not open the dialog to test focus", checks
     return False, f"unknown issue_type {issue_type}", checks
 

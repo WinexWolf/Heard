@@ -1,6 +1,6 @@
 """Token Factory (OpenAI-compatible) client wrapped with a cost / latency tracker."""
 from __future__ import annotations
-import time, threading
+import json, time, threading
 from dataclasses import dataclass, asdict, field
 import httpx
 from .config import Settings, get_settings
@@ -64,13 +64,26 @@ class LLMError(RuntimeError):
     pass
 
 
+def first_json(raw: str, starts: str = "{["):
+    """The first complete JSON value in model output. Prose before it, or anything after it (a second object, a
+    trailing brace), is ignored: a greedy "first { to last }" grab fails on exactly those replies."""
+    dec = json.JSONDecoder()
+    for i, ch in enumerate(raw):
+        if ch in starts:
+            try:
+                return dec.raw_decode(raw, i)[0]
+            except json.JSONDecodeError:
+                continue
+    raise ValueError("no JSON in model output")
+
+
 class LLM:
     """chat(stage, role, messages) -> text. `role` selects the model and its provider: perception / patch / escalation.
     Busy providers (HTTP 429/503, common on NVIDIA's shared endpoint) are retried with exponential backoff."""
-    RETRY_STATUS = (429, 503)
+    RETRY_STATUS = (429, 502, 503, 504)   # busy or overloaded gateway: transient
     TIMEOUT = httpx.Timeout(connect=30, read=600, write=120, pool=30)   # perception on a busy shared endpoint can take minutes
 
-    def __init__(self, settings: Settings | None = None, tracker: CostTracker | None = None, retries: int = 5, sleep=time.sleep):
+    def __init__(self, settings: Settings | None = None, tracker: CostTracker | None = None, retries: int = 8, sleep=time.sleep):
         self.s = settings or get_settings()
         self.tracker = tracker or CostTracker(self.s.prices)
         self.retries, self.sleep = retries, sleep
@@ -81,6 +94,9 @@ class LLM:
         model = self.s.models[role]
         base_url, api_key = self.s.endpoint(role)
         body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature, **(extra or {})}
+        budget = getattr(self.s, "thinking_budget", {}).get(role)
+        if budget:   # shorter thinking -> shorter calls, fewer gateway timeouts on a busy shared endpoint
+            body["chat_template_kwargs"] = {**body.get("chat_template_kwargs", {}), "thinking_token_budget": budget}
         t0 = time.time()
         for attempt in range(self.retries + 1):
             try:

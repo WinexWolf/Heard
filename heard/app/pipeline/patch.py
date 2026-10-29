@@ -1,14 +1,18 @@
 """Stage 2: Nemotron Super proposes minimal search/replace edits to the site source."""
 from __future__ import annotations
-import json, re
+import json
 from pathlib import Path
 from pydantic import ValidationError
+from ..llm import first_json
 from ..schemas import PatchResult
 
 SYSTEM = """You fix web accessibility bugs with MINIMAL source edits.
 Return STRICT JSON only: {"edits":[{"file":"index.html","old_str":"...","new_str":"..."}],"rationale":"one or two sentences"}
-Rules: old_str must match the file EXACTLY and occur exactly once (include enough surrounding text to be unique);
-prefer native HTML semantics, then ARIA; keep visible text unchanged; do not touch unrelated code; one edit per element."""
+Rules: old_str must be copied from the file character for character and occur exactly once (include enough
+surrounding text to be unique). Never shorten it with "..." or paraphrase it: an edit that does not match is discarded.
+Prefer native HTML semantics, then ARIA; keep visible text unchanged; do not touch unrelated code; one edit per element.
+State that changes when the user acts (aria-selected, aria-checked, aria-expanded, moving focus into a dialog) is set in
+the site's JavaScript: edit the .js file's event handlers as well as the HTML."""
 
 TEXT_EXT = {".html", ".js", ".css"}
 
@@ -29,9 +33,7 @@ def build_prompt(finding, step: dict | None, files: dict[str, str], snippets: li
 
 
 def parse_patch(raw: str) -> PatchResult:
-    m = re.search(r"\{.*\}|\[.*\]", raw, re.S)
-    if not m: raise ValueError("no JSON in model output")
-    obj = json.loads(m.group(0))
+    obj = first_json(raw)
     if isinstance(obj, list): obj = {"edits": obj}
     return PatchResult.model_validate(obj)
 

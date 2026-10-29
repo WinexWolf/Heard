@@ -52,8 +52,10 @@ def main():
                     for f in res["findings"]:
                         step = f.get("step") or {}
                         sel_ok = bool(step.get("selector")) and pg.evaluate(REL_SEL_JS, [step["selector"], b["selector"]])
-                        if sel_ok or f["finding"]["issue_type"] == b["category"]:
-                            heard = True; fixed = fixed or f["fixed"]; via = "selector" if sel_ok else "issue_type"
+                        same_kind = f["finding"]["issue_type"] == b["category"]
+                        if sel_ok or same_kind:
+                            heard = True; via = via or ("selector" if sel_ok else "issue_type")
+                            fixed = fixed or (same_kind and f["fixed"])   # only a fix aimed at this kind of bug counts
                     rows.append({"id": b["id"], "site": site, "category": b["category"], "description": b["description"],
                                  "axe_detected": bool(axe_hits), "axe_rules": axe_hits, "heard_detected": heard,
                                  "heard_matched_via": via, "fix_verified": heard and fixed})
@@ -64,7 +66,7 @@ def main():
            "heard_detected": heard_n, "fixes_verified": fix_n, "rejected_unsupported": rejected_total,
            "cost": {**cost, "latency_s": round(cost["latency_s"], 2), "cost_usd": round(cost["cost_usd"], 6)},
            "by_model": dict(by_model), "bugs": rows,
-           "matching_rule": "Heard detected = a supported finding whose step element is the bug element (or ancestor/descendant) OR whose issue_type equals the bug category on the same site. axe detected = a violation node that is the bug element (or ancestor/descendant)."}
+           "matching_rule": "Heard detected = a supported finding whose step element is the bug element (or ancestor/descendant) OR whose issue_type equals the bug category on the same site. Fix verified = one of those findings has the bug's own category and its patch passed verification (a fix for a different kind of issue on the same element does not count). axe detected = a violation node that is the bug element (or ancestor/descendant)."}
     (ROOT / "eval/results.json").write_text(json.dumps(out, indent=2))
     placeholder = "oracle_stub" in source
     md = ["# Heard benchmark: axe-core vs Heard\n"]

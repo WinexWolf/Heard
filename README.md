@@ -6,7 +6,7 @@ Heard audits web accessibility by *listening to a screen-reader session*, not ju
 
 Built for the Nebius x NVIDIA Global AI Hackathon. MIT licensed.
 
-> **Honest status (read this first).** This repository was assembled without Nebius Token Factory or Tavily credentials, so the live model path (perception, patch, escalation, Tavily) is implemented and unit-tested against scripted fakes but **has not yet been run against the real APIs**. The cached demo and benchmark currently use a clearly labeled **non-model "oracle stub"** so the UI, verifier and eval run without keys. The **axe-core numbers are real**; the **Heard numbers are placeholders until you run the live pipeline** (steps below). `PERCEPTION_MODE` is currently `text_only_log` (the default before the probe has run).
+> **Status.** The pipeline runs live: perception with Nemotron 3 Nano Omni on NVIDIA's API (it watches the session video and hears its soundtrack), patching and escalation with Nemotron Super and Ultra on Nebius Token Factory, and W3C-only Tavily citations. The cached demo and benchmark come from a live run on 2026-10-28 (`source: live`). Sessions are still simulated screen-reader sessions, and verification is an accessibility-tree proxy (see Limitations).
 
 ## How it works
 
@@ -134,16 +134,25 @@ To add a real recording (e.g. VoiceOver or NVDA), create `data/sessions/real_<na
 
 ## Results
 
-Source: `eval/RESULTS.md` (regenerate with `uv run eval/run_eval.py`). Currently:
+Source: `eval/RESULTS.md` (regenerate with `uv run scripts/precompute_cache.py && uv run eval/run_eval.py`). One live run of all three sessions on 2026-10-28:
 
 | Metric | Value |
 |---|---|
-| axe-core detected (real measurement) | **4/12** (B01, B02, B09, B12) |
-| Heard detected | **placeholder** (oracle stub); live number pending |
-| Fixes verified | placeholder (the 12 reference fixes all pass the verifier; 12 matching "no edit" controls all fail it) |
-| Rejected as unsupported | 0 (stub; live number pending) |
+| axe-core detected | **4/12** (B01, B02, B09, B12) |
+| Heard detected | **10/12** |
+| Fixes verified | **10/10** (a fix counts only if it targets the bug's own category and passes verification) |
+| Rejected as unsupported | 0 |
+| Model calls / cost / time | 17 calls · **$0.0195** · 268 s for all three sessions (about a minute of perception per session) |
 
-axe-core misses 8 of 12: vague link text, repeated identical controls, missing/placeholder-only label, un-announced error, missing checkbox state, div-as-button, modal semantics and focus, and tab roles.
+- **Where Heard beats axe-core:** vague links, repeated identical controls, the unannounced error, the checkbox with no state, the div acting as a button and the modal without dialog semantics. axe-core flags none of these.
+- **Missed:** B03 (placeholder-only email label) is inaudible, because Chromium names the field from its placeholder, so it sounds the same broken or fixed. B08 (tab roles) was not reported by perception in this run.
+- **Run-to-run variation:** detection varies slightly between live runs even at temperature 0. Across the last five runs, B04, B07 and B08 were each missed once.
+- **Escalation earns its place:** in this run, Nemotron Ultra fixed the modal and the missing alt text after Nemotron Super failed verification twice on each.
+- **Guards behind these numbers:**
+  - The evidence check drops quotes that were never heard.
+  - Duplicate findings for one widget are merged.
+  - A finding whose issue type can't apply to its element is corrected (e.g. `vague_link` on a button becomes `label_in_name`).
+  - A finding the unpatched page already passes is rejected as not reproduced, so it can never count as a fix.
 
 ## Deployment
 
@@ -179,7 +188,8 @@ The public demo is protected by an **in-memory per-IP rate limit** on live analy
 
 - Sessions are **simulated**; a real VoiceOver/NVDA clip has not been run through it yet.
 - Verification is a **deterministic accessibility-tree proxy** for screen-reader output, not a live screen reader. It can pass a fix a real screen reader would still announce awkwardly, and it only knows the assertions in `verify.py`.
-- The live model path has not been exercised against the real APIs in this repo's history (see status above); `FEEDBACK.md` lists what to confirm.
+- Live results come from one run of three small demo sites. Perception varies slightly between runs (see Results), and the shared NVIDIA endpoint can be busy: Heard retries 429/5xx and timeouts with backoff, but a run can still fail and keep the previous cache.
+- Token Factory's chat API does not accept audio (text, image and video only), so audio perception needs an NVIDIA API key.
 - Only 12 seeded bugs on 3 tiny static sites; numbers say nothing about real-world sites.
 - Browser `<video>` playback needs an H.264-capable browser (Chrome, Safari, Firefox desktop).
 
