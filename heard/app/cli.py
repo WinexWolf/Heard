@@ -98,9 +98,7 @@ def make_llm(roles: tuple[str, ...] = ("perception",)):
     from .config import get_settings
     from .llm import LLM
     s = get_settings()
-    if any(not v or v.startswith("<") for v in (s.api_key, s.base_url, *(s.models[r] for r in roles))):
-        return None
-    return LLM(s)
+    return LLM(s) if all(s.role_ready(r) for r in roles) else None
 
 
 def run_check(cfg: dict, base: dict | None, head: dict, llm=None, cache_path: Path | None = None) -> dict:

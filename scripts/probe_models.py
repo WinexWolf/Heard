@@ -1,64 +1,71 @@
 """Milestone 0: capability probe.
 
-Lists Token Factory models, finds Nemotron ones, and tests which input types the
-perception model accepts (text / image / video / audio). Writes data/capabilities.json.
-Never guesses: every variant tried is recorded with its raw outcome.
+Lists the perception provider's models and tests which inputs MODEL_PERCEPTION actually understands: text, image,
+video and audio. Each test uses media with a distinctive answer (a red image saying HEARD, a video that turns blue then
+green, a spoken "pineapple seventy three"), and only a correct answer counts: an HTTP 200 alone proves nothing.
+Writes data/capabilities.json, including PERCEPTION_MODE and the audio variant perception should use.
 """
 from __future__ import annotations
-import base64, json, os, subprocess, sys, tempfile, time
+import base64, json, subprocess, sys, tempfile, time
 from pathlib import Path
 
 import httpx
-from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(ROOT / ".env")
+sys.path.insert(0, str(ROOT))
+from heard.app import a11y
+from heard.app.config import get_settings
+
 OUT = ROOT / "data" / "capabilities.json"
-
-BASE = os.getenv("NEBIUS_BASE_URL", "").split("#")[0].strip().rstrip("/")
-KEY = os.getenv("NEBIUS_API_KEY", "")
-MODEL = os.getenv("MODEL_PERCEPTION", "")
-
-
-def _is_placeholder(v: str) -> bool:
-    return not v or v.startswith("<")
+S = get_settings()
+BASE, KEY = S.endpoint("perception")
+MODEL = S.models["perception"]
 
 
 def make_media(tmp: Path) -> dict[str, bytes]:
-    """Tiny png / mp4 / wav generated with ffmpeg so the probe has no asset dependencies."""
-    png, mp4, wav = tmp / "t.png", tmp / "t.mp4", tmp / "t.wav"
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as pw:
+        b = a11y.launch_chromium(pw); p = b.new_page(viewport={"width": 320, "height": 240})
+        p.set_content("<body style='margin:0;background:#d00;display:grid;place-items:center;height:240px'>"
+                      "<b style='color:#fff;font:60px sans-serif'>HEARD</b></body>")
+        p.screenshot(path=str(tmp / "t.png")); b.close()
     run = lambda *a: subprocess.run(a, check=True, capture_output=True)
-    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=white:s=320x240:d=1", "-frames:v", "1", str(png))
-    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=white:s=320x240:d=2:r=5", "-pix_fmt", "yuv420p", str(mp4))
-    run("ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=1", "-ar", "16000", "-ac", "1", str(wav))
-    return {"png": png.read_bytes(), "mp4": mp4.read_bytes(), "wav": wav.read_bytes()}
+    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=blue:s=320x240:d=2:r=5", "-f", "lavfi", "-i", "color=c=green:s=320x240:d=2:r=5",
+        "-filter_complex", "[0][1]concat=n=2:v=1[v]", "-map", "[v]", "-pix_fmt", "yuv420p", str(tmp / "t.mp4"))
+    a11y.tts("The secret word is pineapple seventy three.", tmp / "t.wav")
+    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=black:s=320x240:r=5", "-i", str(tmp / "t.wav"),
+        "-shortest", "-pix_fmt", "yuv420p", "-c:v", "libx264", "-c:a", "aac", str(tmp / "av.mp4"))
+    return {k: (tmp / f).read_bytes() for k, f in (("png", "t.png"), ("mp4", "t.mp4"), ("wav", "t.wav"), ("av", "av.mp4"))}
 
 
 def b64(b: bytes) -> str:
     return base64.b64encode(b).decode()
 
 
-def chat(client: httpx.Client, content, max_tokens=64) -> tuple[bool, str]:
-    body = {"model": MODEL, "max_tokens": max_tokens,
-            "messages": [{"role": "user", "content": content}]}
-    try:
-        r = client.post(f"{BASE}/chat/completions", json=body, timeout=120)
-    except Exception as e:  # network
-        return False, f"exception: {e!r}"
-    if r.status_code == 200:
+def chat(client: httpx.Client, content, extra: dict | None = None, max_tokens: int = 2048) -> tuple[bool, str]:
+    """(answered, text). Reasoning models spend tokens thinking first, so max_tokens must leave room for the answer."""
+    body = {"model": MODEL, "max_tokens": max_tokens, "temperature": 0, "messages": [{"role": "user", "content": content}], **(extra or {})}
+    for attempt in range(6):
         try:
-            return True, r.json()["choices"][0]["message"].get("content") or ""
+            r = client.post(f"{BASE}/chat/completions", json=body, timeout=180)
         except Exception as e:
-            return False, f"bad 200 body: {e!r} {r.text[:300]}"
-    return False, f"HTTP {r.status_code}: {r.text[:400]}"
+            return False, f"exception: {e!r}"
+        if r.status_code not in (429, 503): break
+        time.sleep(min(30, 2 ** attempt))
+    if r.status_code != 200:
+        return False, f"HTTP {r.status_code}: {r.text[:300]}"
+    return True, (r.json()["choices"][0]["message"].get("content") or "").strip()
+
+
+def understood(answer: str, *words: str) -> bool:
+    return all(w in answer.lower() for w in words)
 
 
 def main() -> int:
-    caps: dict = {"probed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "base_url": BASE,
-                  "nemotron_models": [], "perception_model": MODEL, "tests": {},
-                  "PERCEPTION_MODE": "text_only_log"}
-    if _is_placeholder(KEY) or _is_placeholder(BASE):
-        caps["note"] = "NEBIUS_API_KEY / NEBIUS_BASE_URL not set; defaulted to text_only_log. Re-run with keys."
+    caps: dict = {"probed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "provider": S.provider["perception"], "base_url": BASE,
+                  "nemotron_models": [], "perception_model": MODEL, "tests": {}, "PERCEPTION_MODE": "text_only_log"}
+    if not S.role_ready("perception"):
+        caps["note"] = f"perception endpoint, key or MODEL_PERCEPTION not set (provider {S.provider['perception']}); defaulted to text_only_log."
         OUT.write_text(json.dumps(caps, indent=2)); print(caps["note"]); return 1
 
     client = httpx.Client(headers={"Authorization": f"Bearer {KEY}"})
@@ -69,49 +76,47 @@ def main() -> int:
     ids = [m["id"] for m in r.json().get("data", [])]
     caps["nemotron_models"] = sorted(i for i in ids if "nemotron" in i.lower())
     print("Nemotron models:"); [print("  ", i) for i in caps["nemotron_models"]]
-
-    if _is_placeholder(MODEL) or MODEL not in ids:
-        caps["note"] = (f"MODEL_PERCEPTION={MODEL!r} is not in the model list. Pick an ID from "
-                        "nemotron_models above (look for 'omni'), set it in .env, re-run.")
+    if MODEL not in ids:
+        caps["note"] = f"MODEL_PERCEPTION={MODEL!r} is not in the model list. Pick an ID from nemotron_models, set it in .env, re-run."
         OUT.write_text(json.dumps(caps, indent=2)); print(caps["note"]); return 1
 
     with tempfile.TemporaryDirectory() as td:
         m = make_media(Path(td))
     T = caps["tests"]
-    ok, out = chat(client, "Reply with the single word: pong"); T["text"] = {"ok": ok, "detail": out[:200]}
-    ok, out = chat(client, [{"type": "text", "text": "What colour is this image? One word."},
-                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64(m['png'])}"}}])
-    T["image"] = {"ok": ok, "detail": out[:200]}
 
-    # Video variants: record every one tried. Check current Nebius docs for the documented shape.
-    vq = "Describe this video in one short sentence."
-    video_variants = {
-        "video_url_data_uri": [{"type": "text", "text": vq},
-                               {"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{b64(m['mp4'])}"}}],
-    }
-    T["video"] = {"ok": False, "variants": {}}
-    for name, content in video_variants.items():
-        ok, out = chat(client, content); T["video"]["variants"][name] = {"ok": ok, "detail": out[:300]}
-        if ok: T["video"]["ok"] = True; T["video"]["working_variant"] = name; break
+    def test(name, content, words, extra=None):
+        ok, out = chat(client, content, extra)
+        res = {"ok": ok and understood(out, *words), "answered": ok, "detail": out[:300]}
+        print(f"  {name}: {'understood' if res['ok'] else 'NOT understood'} -> {out[:90]!r}")
+        return res
 
-    aq = "What do you hear? One short sentence."
-    audio_variants = {
-        "input_audio_wav_b64": [{"type": "text", "text": aq},
-                                {"type": "input_audio", "input_audio": {"data": b64(m["wav"]), "format": "wav"}}],
-        "audio_url_data_uri": [{"type": "text", "text": aq},
-                               {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64(m['wav'])}"}}],
+    print(f"\nProbing {MODEL} on {caps['provider']}:")
+    T["text"] = test("text", "Reply with exactly one word: pong", ["pong"])
+    T["image"] = test("image", [{"type": "text", "text": "What background colour and what word do you see? Answer as: colour, word"},
+                                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64(m['png'])}"}}], ["red", "heard"])
+    T["video"] = test("video", [{"type": "text", "text": "This video is a solid colour that changes once. Answer as: first colour, second colour"},
+                                {"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{b64(m['mp4'])}"}}], ["blue", "green"])
+
+    aq = "What exact sentence is spoken? If you hear no audio, say NO AUDIO."
+    audio_variants = {   # first understood variant wins; a video's own soundtrack keeps sight and sound in one input
+        "video_audio_track": ([{"type": "text", "text": aq}, {"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{b64(m['av'])}"}}],
+                              {"mm_processor_kwargs": {"use_audio_in_video": True}}),
+        "audio_url_data_uri": ([{"type": "text", "text": aq}, {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64(m['wav'])}"}}], None),
+        "input_audio_wav_b64": ([{"type": "text", "text": aq}, {"type": "input_audio", "input_audio": {"data": b64(m["wav"]), "format": "wav"}}], None),
     }
     T["audio"] = {"ok": False, "variants": {}}
-    for name, content in audio_variants.items():
-        ok, out = chat(client, content); T["audio"]["variants"][name] = {"ok": ok, "detail": out[:300]}
-        if ok: T["audio"]["ok"] = True; T["audio"]["working_variant"] = name; break
+    for name, (content, extra) in audio_variants.items():
+        res = test(f"audio/{name}", content, ["pineapple"], extra)
+        T["audio"]["variants"][name] = res
+        if res["ok"]:
+            T["audio"]["ok"] = True; T["audio"]["working_variant"] = name; break
 
     if T["video"]["ok"] and T["audio"]["ok"]: mode = "native_av"
     elif T["image"]["ok"]: mode = "frames_plus_log"
     else: mode = "text_only_log"
     caps["PERCEPTION_MODE"] = mode
     OUT.write_text(json.dumps(caps, indent=2))
-    print(f"\nPERCEPTION_MODE = {mode}\nwrote {OUT}")
+    print(f"\nPERCEPTION_MODE = {mode}" + (f" (audio via {T['audio']['working_variant']})" if T["audio"]["ok"] else "") + f"\nwrote {OUT}")
     print("Reminder: copy anything surprising into FEEDBACK_NOTES.md")
     return 0
 

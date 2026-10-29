@@ -1,6 +1,57 @@
 {
-  "PERCEPTION_MODE": "text_only_log",
-  "note": "Default before probe_models.py has been run with real keys. Re-run scripts/probe_models.py to update.",
-  "nemotron_models": [],
-  "tests": {}
+  "probed_at": "2026-10-28T20:19:59",
+  "provider": "nvidia",
+  "base_url": "https://integrate.api.nvidia.com/v1",
+  "nemotron_models": [
+    "nvidia/llama-3.1-nemotron-51b-instruct",
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
+    "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+    "nvidia/llama-nemotron-embed-vl-1b-v2",
+    "nvidia/nemotron-3-embed-1b",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "nvidia/nemotron-3-super-120b-a12b",
+    "nvidia/nemotron-3-ultra-550b-a55b",
+    "nvidia/nemotron-3.5-bolt-e4b",
+    "nvidia/nemotron-3.5-content-safety",
+    "nvidia/nemotron-3.5-embed-1b",
+    "nvidia/nemotron-3.5-embed-8b",
+    "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "nvidia/nemotron-4-340b-instruct",
+    "nvidia/nemotron-4-340b-reward",
+    "nvidia/nemotron-nano-3-30b-a3b",
+    "nvidia/nemotron-parse",
+    "nvidia/nemotron-parse-2.0"
+  ],
+  "perception_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+  "tests": {
+    "text": {
+      "ok": true,
+      "answered": true,
+      "detail": "pong"
+    },
+    "image": {
+      "ok": true,
+      "answered": true,
+      "detail": "Red, HEARD"
+    },
+    "video": {
+      "ok": true,
+      "answered": true,
+      "detail": "blue, green"
+    },
+    "audio": {
+      "ok": true,
+      "variants": {
+        "video_audio_track": {
+          "ok": true,
+          "answered": true,
+          "detail": "The secret word is pineapple 73."
+        }
+      },
+      "working_variant": "video_audio_track"
+    }
+  },
+  "PERCEPTION_MODE": "native_av"
 }

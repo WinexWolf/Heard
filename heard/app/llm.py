@@ -65,26 +65,39 @@ class LLMError(RuntimeError):
 
 
 class LLM:
-    """chat(stage, role, content) -> text. `role` selects the model: perception / patch / escalation."""
-    def __init__(self, settings: Settings | None = None, tracker: CostTracker | None = None):
+    """chat(stage, role, messages) -> text. `role` selects the model and its provider: perception / patch / escalation.
+    Busy providers (HTTP 429/503, common on NVIDIA's shared endpoint) are retried with exponential backoff."""
+    RETRY_STATUS = (429, 503)
+    TIMEOUT = httpx.Timeout(connect=30, read=600, write=120, pool=30)   # perception on a busy shared endpoint can take minutes
+
+    def __init__(self, settings: Settings | None = None, tracker: CostTracker | None = None, retries: int = 5, sleep=time.sleep):
         self.s = settings or get_settings()
         self.tracker = tracker or CostTracker(self.s.prices)
+        self.retries, self.sleep = retries, sleep
 
-    def chat(self, stage: str, role: str, messages: list[dict], max_tokens: int = 4096, temperature: float = 0.2) -> str:
+    def chat(self, stage: str, role: str, messages: list[dict], max_tokens: int = 4096, temperature: float = 0.2,
+             extra: dict | None = None) -> str:
+        """`extra` is merged into the request body, e.g. {"mm_processor_kwargs": {"use_audio_in_video": True}}."""
         model = self.s.models[role]
-        body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
+        base_url, api_key = self.s.endpoint(role)
+        body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature, **(extra or {})}
         t0 = time.time()
-        try:
-            r = httpx.post(f"{self.s.base_url}/chat/completions", json=body, timeout=300,
-                           headers={"Authorization": f"Bearer {self.s.api_key}"})
-        except Exception as e:
-            self.tracker.record(stage, model, 0, 0, time.time() - t0, ok=False, note=type(e).__name__)
-            raise LLMError(f"network error calling model ({type(e).__name__})") from None
+        for attempt in range(self.retries + 1):
+            try:
+                r = httpx.post(f"{base_url}/chat/completions", json=body, timeout=self.TIMEOUT, headers={"Authorization": f"Bearer {api_key}"})
+            except httpx.TransportError as e:            # timeouts and dropped connections are as transient as a 503
+                if attempt == self.retries:
+                    self.tracker.record(stage, model, 0, 0, time.time() - t0, ok=False, note=f"{type(e).__name__} after {attempt} retries")
+                    raise LLMError(f"network error calling model ({type(e).__name__}, {attempt} retries)") from None
+                self.sleep(min(30, 2 ** attempt)); continue
+            if r.status_code not in self.RETRY_STATUS or attempt == self.retries:
+                break
+            self.sleep(min(30, 2 ** attempt))
         dt = time.time() - t0
         if r.status_code != 200:
             self.tracker.record(stage, model, 0, 0, dt, ok=False, note=f"HTTP {r.status_code}")
             raise LLMError(f"model call failed: HTTP {r.status_code}: {r.text[:300]}")
         j = r.json()
         u = j.get("usage") or {}
-        self.tracker.record(stage, model, u.get("prompt_tokens", 0), u.get("completion_tokens", 0), dt)
+        self.tracker.record(stage, model, u.get("prompt_tokens", 0), u.get("completion_tokens", 0), dt, note=f"{attempt} retries" if attempt else "")
         return j["choices"][0]["message"].get("content") or ""

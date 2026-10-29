@@ -1,0 +1,426 @@
+{
+  "session_id": "dashboard_buggy",
+  "site": "dashboard",
+  "source": "live",
+  "perception_mode": "native_av",
+  "models": {
+    "perception": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "patch": "nvidia/nemotron-3-super-120b-a12b",
+    "escalation": "nvidia/Nemotron-3-Ultra-550b-a55b"
+  },
+  "generated_at": "2026-10-28T21:01:04",
+  "label": "simulated screen reader",
+  "findings": [
+    {
+      "finding": {
+        "id": "F1",
+        "t_start": 0.88,
+        "t_end": 4.08,
+        "announced_text": "Sales dashboard, heading level 1",
+        "visible_text_or_description": "Sales dashboard (heading level 1) followed by Overview (heading level 3) \u2013 heading level jump from 1 to 3.",
+        "issue_type": "heading_skip",
+        "severity": "medium",
+        "wcag_guess": "1.3.1",
+        "evidence": "t=0.88 \"Sales dashboard, heading level 1\"; t=4.08 \"Overview, heading level 3\""
+      },
+      "step": {
+        "i": 0,
+        "t": 0.88,
+        "kind": "browse",
+        "key": "Down",
+        "selector": "header.bar > h1",
+        "html": "<h1>Sales dashboard</h1>",
+        "name": "Sales dashboard",
+        "role": "heading",
+        "visible_text": "Sales dashboard",
+        "announcement": "Sales dashboard, heading level 1"
+      },
+      "citations": [
+        {
+          "title": "Understanding Techniques for WCAG 2.1 Success Criteria | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Understanding/understanding-techniques"
+        },
+        {
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
+        },
+        {
+          "title": "Comparison of WCAG 1.0 Checkpoints to WCAG 2.0, in Numerical Order",
+          "url": "https://www.w3.org/WAI/WCAG20/from10/comparison"
+        }
+      ],
+      "query": "WCAG 2.2 1.3.1 Info and Relationships heading levels do not skip technique",
+      "attempts": [
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": true,
+          "reason": "",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<h3 id=\"overview-heading\">Overview</h3>",
+              "new_str": "<h2 id=\"overview-heading\">Overview</h2>"
+            }
+          ],
+          "rationale": "Change the heading level from h3 to h2 to avoid skipping heading levels after the h1, ensuring a logical heading hierarchy.",
+          "verification": {
+            "passed": true,
+            "reason": "",
+            "checks": [
+              "heading levels [1, 2]"
+            ],
+            "new_violations": [],
+            "axe_before": {
+              "heading-order": 1
+            },
+            "axe_after": {},
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": true,
+      "model_used": "nvidia/nemotron-3-super-120b-a12b",
+      "final": {
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "role": "patch",
+        "passed": true,
+        "reason": "",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<h3 id=\"overview-heading\">Overview</h3>",
+            "new_str": "<h2 id=\"overview-heading\">Overview</h2>"
+          }
+        ],
+        "rationale": "Change the heading level from h3 to h2 to avoid skipping heading levels after the h1, ensuring a logical heading hierarchy.",
+        "verification": {
+          "passed": true,
+          "reason": "",
+          "checks": [
+            "heading levels [1, 2]"
+          ],
+          "new_violations": [],
+          "axe_before": {
+            "heading-order": 1
+          },
+          "axe_after": {},
+          "after_announcement": ""
+        }
+      },
+      "before_audio": "sessions/dashboard_buggy/step_0_before.wav",
+      "after_audio": null
+    },
+    {
+      "finding": {
+        "id": "F2",
+        "t_start": 16.84,
+        "t_end": 19.38,
+        "announced_text": "Orders, clickable",
+        "visible_text_or_description": "Orders tab is selected (highlighted) showing order list; no \"selected\" announcement heard.",
+        "issue_type": "missing_state",
+        "severity": "medium",
+        "wcag_guess": "4.1.2",
+        "evidence": "t=16.84 \"Orders, clickable\" (no \"selected\" announcement); visual shows Orders tab selected with order list."
+      },
+      "step": {
+        "i": 6,
+        "t": 16.84,
+        "kind": "focus",
+        "key": "Tab",
+        "selector": "main > div.tabs:nth-of-type(2) > div.tab:nth-of-type(2)",
+        "html": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\">Orders</div>",
+        "name": "Orders",
+        "role": "generic",
+        "visible_text": "Orders",
+        "announcement": "Orders, clickable"
+      },
+      "citations": [
+        {
+          "title": "Understanding Success Criterion 4.1.2: Name, Role, Value | WAI | W3C",
+          "url": "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html"
+        },
+        {
+          "title": "Understanding Success Criterion 4.1.2  | Understanding WCAG 2.0",
+          "url": "https://www.w3.org/TR/UNDERSTANDING-WCAG20/ensure-compat-rsv.html"
+        },
+        {
+          "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+          "url": "https://www.w3.org/TR/WCAG22"
+        }
+      ],
+      "query": "WCAG 2.2 4.1.2 Name, Role, Value custom checkbox role=checkbox aria-checked technique",
+      "attempts": [
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\\\n  tab\"",
+          "edits": [
+            {
+              "file": "app.js",
+              "old_str": "tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs.forEach(x => x.classList.remove('active'));\\n  t.classList.add('active');\\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\\n});",
+              "new_str": "tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs.forEach(x => x.classList.remove('active'));\\n  t.classList.add('active');\\n  tabs.forEach(x => x.setAttribute('aria-selected', 'false'));\\n  t.setAttribute('aria-selected', 'true');\\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\\n});"
+            }
+          ],
+          "rationale": "",
+          "verification": {
+            "passed": false,
+            "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\\\n  tab\"",
+            "checks": [],
+            "new_violations": [],
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "patch",
+          "passed": false,
+          "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\\\n  tab\"",
+          "edits": [
+            {
+              "file": "app.js",
+              "old_str": "tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs.forEach(x => x.classList.remove('active'));\\n  t.classList.add('active');\\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\\n});\\n\\n",
+              "new_str": "tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs.forEach(x => x.classList.remove('active'));\\n  t.classList.add('active');\\n  tabs.forEach(x => x.setAttribute('aria-selected', 'false'));\\n  t.setAttribute('aria-selected', 'true');\\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\\n});\\n\\n"
+            }
+          ],
+          "rationale": "Add aria-selected attribute to tabs to convey selected state, updating it when a tab is activated so screen readers announce 'selected'.",
+          "verification": {
+            "passed": false,
+            "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\\\n  tab\"",
+            "checks": [],
+            "new_violations": [],
+            "after_announcement": ""
+          }
+        },
+        {
+          "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "role": "escalation",
+          "passed": false,
+          "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs\"",
+          "edits": [
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tabs\">",
+              "new_str": "<div class=\"tabs\" role=\"tablist\">"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab active\" tabindex=\"0\" data-panel=\"panel-overview\">Overview</div>",
+              "new_str": "<div class=\"tab active\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-overview\" aria-selected=\"true\" aria-controls=\"panel-overview\">Overview</div>"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\">Orders</div>",
+              "new_str": "<div class=\"tab\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\" aria-selected=\"false\" aria-controls=\"panel-orders\">Orders</div>"
+            },
+            {
+              "file": "index.html",
+              "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-users\">Users</div>",
+              "new_str": "<div class=\"tab\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-users\" aria-selected=\"false\" aria-controls=\"panel-users\">Users</div>"
+            },
+            {
+              "file": "app.js",
+              "old_str": "tabs.forEach(t => t.addEventListener('click', () => {\n  tabs.forEach(x => x.classList.remove('active'));\n  t.classList.add('active');\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\n});",
+              "new_str": "tabs.forEach(t => t.addEventListener('click', () => {\n  tabs.forEach(x => {\n    x.classList.remove('active');\n    x.setAttribute('aria-selected', 'false');\n  });\n  t.classList.add('active');\n  t.setAttribute('aria-selected', 'true');\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\n});"
+            }
+          ],
+          "rationale": "Add role='tablist' to tab container and role='tab' with aria-selected/aria-controls to each tab for proper ARIA tab pattern; update click handler to sync aria-selected state so screen readers announce selected tab.",
+          "verification": {
+            "passed": false,
+            "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs\"",
+            "checks": [],
+            "new_violations": [],
+            "after_announcement": ""
+          }
+        }
+      ],
+      "fixed": false,
+      "model_used": null,
+      "final": {
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "role": "escalation",
+        "passed": false,
+        "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs\"",
+        "edits": [
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tabs\">",
+            "new_str": "<div class=\"tabs\" role=\"tablist\">"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab active\" tabindex=\"0\" data-panel=\"panel-overview\">Overview</div>",
+            "new_str": "<div class=\"tab active\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-overview\" aria-selected=\"true\" aria-controls=\"panel-overview\">Overview</div>"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\">Orders</div>",
+            "new_str": "<div class=\"tab\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-orders\" aria-selected=\"false\" aria-controls=\"panel-orders\">Orders</div>"
+          },
+          {
+            "file": "index.html",
+            "old_str": "<div class=\"tab\" tabindex=\"0\" data-panel=\"panel-users\">Users</div>",
+            "new_str": "<div class=\"tab\" role=\"tab\" tabindex=\"0\" data-panel=\"panel-users\" aria-selected=\"false\" aria-controls=\"panel-users\">Users</div>"
+          },
+          {
+            "file": "app.js",
+            "old_str": "tabs.forEach(t => t.addEventListener('click', () => {\n  tabs.forEach(x => x.classList.remove('active'));\n  t.classList.add('active');\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\n});",
+            "new_str": "tabs.forEach(t => t.addEventListener('click', () => {\n  tabs.forEach(x => {\n    x.classList.remove('active');\n    x.setAttribute('aria-selected', 'false');\n  });\n  t.classList.add('active');\n  t.setAttribute('aria-selected', 'true');\n  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.dataset.panel);\n});"
+          }
+        ],
+        "rationale": "Add role='tablist' to tab container and role='tab' with aria-selected/aria-controls to each tab for proper ARIA tab pattern; update click handler to sync aria-selected state so screen readers announce selected tab.",
+        "verification": {
+          "passed": false,
+          "reason": "patch could not be applied: old_str must match exactly once in app.js (matched 0): \"tabs.forEach(t => t.addEventListener('click', () => {\\n  tabs\"",
+          "checks": [],
+          "new_violations": [],
+          "after_announcement": ""
+        }
+      },
+      "before_audio": "sessions/dashboard_buggy/step_6_before.wav",
+      "after_audio": null
+    }
+  ],
+  "rejected_unsupported": [],
+  "raw_finding_count": 2,
+  "cost": {
+    "total": {
+      "calls": 6,
+      "input_tokens": 11752,
+      "output_tokens": 18511,
+      "latency_s": 261.305,
+      "cost_usd": 0.016911,
+      "cost_known": true,
+      "tavily_calls": 2
+    },
+    "by_stage": {
+      "perception": {
+        "calls": 1,
+        "input_tokens": 4806,
+        "output_tokens": 9174,
+        "latency_s": 211.104,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "patch": {
+        "calls": 4,
+        "input_tokens": 5410,
+        "output_tokens": 6790,
+        "latency_s": 41.893,
+        "cost_usd": 0.007733,
+        "cost_known": true
+      },
+      "escalation": {
+        "calls": 1,
+        "input_tokens": 1536,
+        "output_tokens": 2547,
+        "latency_s": 8.308,
+        "cost_usd": 0.009177,
+        "cost_known": true
+      }
+    },
+    "by_model": {
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+        "calls": 1,
+        "input_tokens": 4806,
+        "output_tokens": 9174,
+        "latency_s": 211.104,
+        "cost_usd": 0.0,
+        "cost_known": true
+      },
+      "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 4,
+        "input_tokens": 5410,
+        "output_tokens": 6790,
+        "latency_s": 41.893,
+        "cost_usd": 0.007733,
+        "cost_known": true
+      },
+      "nvidia/Nemotron-3-Ultra-550b-a55b": {
+        "calls": 1,
+        "input_tokens": 1536,
+        "output_tokens": 2547,
+        "latency_s": 8.308,
+        "cost_usd": 0.009177,
+        "cost_known": true
+      }
+    },
+    "calls": [
+      {
+        "stage": "perception",
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+        "input_tokens": 4806,
+        "output_tokens": 9174,
+        "latency_s": 211.104,
+        "cost_usd": 0.0,
+        "ok": true,
+        "note": "1 retries"
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1271,
+        "output_tokens": 384,
+        "latency_s": 3.94,
+        "cost_usd": 0.0007269,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1288,
+        "output_tokens": 3000,
+        "latency_s": 15.924,
+        "cost_usd": 0.0030864,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1323,
+        "output_tokens": 1844,
+        "latency_s": 10.567,
+        "cost_usd": 0.0020565,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "patch",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "input_tokens": 1528,
+        "output_tokens": 1562,
+        "latency_s": 11.462,
+        "cost_usd": 0.0018641999999999999,
+        "ok": true,
+        "note": ""
+      },
+      {
+        "stage": "escalation",
+        "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "input_tokens": 1536,
+        "output_tokens": 2547,
+        "latency_s": 8.308,
+        "cost_usd": 0.009177,
+        "ok": true,
+        "note": ""
+      }
+    ],
+    "tavily": [
+      {
+        "query": "WCAG 2.2 1.3.1 Info and Relationships heading levels do not skip technique",
+        "latency_s": 2.002,
+        "results": 3,
+        "ok": true
+      },
+      {
+        "query": "WCAG 2.2 4.1.2 Name, Role, Value custom checkbox role=checkbox aria-checked technique",
+        "latency_s": 2.266,
+        "results": 3,
+        "ok": true
+      }
+    ]
+  }
+}

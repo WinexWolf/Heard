@@ -11,8 +11,22 @@ Rules:
 - Quote announced_text EXACTLY as it appears in the speech log (use "" when the user heard silence after an action).
 - A control announced as just its role ("button"), a role that misleads ("clickable" for something that acts as a button/tab/checkbox),
   identical repeated announcements, headings that skip levels, missing state, or a visible change that was never announced are typical issues.
-- issue_type must be one of: missing_name, missing_alt, missing_label, vague_link, repeated_control, error_not_announced,
-  label_in_name, missing_state, div_button, modal_dialog, tab_widget, heading_skip, other.
+- issue_type MUST be the most specific type that fits. Each type decides how the fix is verified, so a wrong or vague type
+  lets a bad fix pass. Pick by the symptom:
+    missing_name        a control announced as only its role ("button", "link"), with no name
+    missing_alt         an image announced as just "graphic"/"image", or not at all
+    missing_label       a form field whose name comes only from its placeholder, or that has no name
+    vague_link          links whose text alone is meaningless ("Learn more", "Click here", "Read more")
+    repeated_control    several controls announced identically ("Edit, button" x5) that do different things
+    error_not_announced an error, status or confirmation appears on screen but nothing (or "(silence)") is heard
+    label_in_name       the announced name differs from the visible label (heard "Continue", screen says "Create account")
+    missing_state       a checkbox, switch or toggle with no checked/pressed/expanded state, or a state that never changes
+    div_button          something that acts as a button is announced as "clickable", "group" or plain text
+    modal_dialog        a dialog opens but is not announced as a dialog, or focus does not move into it
+    tab_widget          tabs announced as "clickable" or plain text, with no "tab"/"selected"
+    heading_skip        heading levels jump (level 1 straight to level 3)
+  "clickable" is never a reason for other: decide whether the element acts as a button (div_button), a tab (tab_widget)
+  or a checkbox (missing_state). Use other ONLY when none of the twelve types fits, and then say in evidence why none fits.
 - severity: low|medium|high|critical. wcag_guess like "4.1.2" (criterion number only).
 Return STRICT JSON only, no prose: {"findings":[{"id":"F1","t_start":0.0,"t_end":0.0,"announced_text":"","visible_text_or_description":"","issue_type":"","severity":"","wcag_guess":"","evidence":""}]}"""
 
@@ -38,6 +52,18 @@ def extract_frames(video: Path, times: list[float], max_frames: int = 16) -> lis
     return out
 
 
+def audio_variant(caps: dict) -> str | None:
+    """How the perception model accepts audio, as found by scripts/probe_models.py (None if it doesn't)."""
+    return (caps.get("tests", {}).get("audio", {}) or {}).get("working_variant")
+
+
+def request_extra(mode: str, caps: dict) -> dict | None:
+    """Extra request body for perception: the video's own soundtrack is only used when asked for."""
+    if mode == "native_av" and audio_variant(caps) == "video_audio_track":
+        return {"mm_processor_kwargs": {"use_audio_in_video": True}}
+    return None
+
+
 def build_messages(session_dir: Path, steps: list[dict], mode: str, caps: dict) -> list[dict]:
     log = (session_dir / "speech_log.json").read_text() if (session_dir / "speech_log.json").exists() else "[]"
     text = (f"Session recorded with a SIMULATED screen reader. Speech log (what the user heard):\n{log}\n\n"
@@ -47,10 +73,13 @@ def build_messages(session_dir: Path, steps: list[dict], mode: str, caps: dict) 
         video = session_dir / "session.mp4"
         b64 = base64.b64encode(video.read_bytes()).decode()
         content.append({"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{b64}"}})
-        wv = (caps.get("tests", {}).get("audio", {}) or {}).get("working_variant")
-        if wv == "input_audio_wav_b64":
+        wv = audio_variant(caps)
+        if wv:
+            content[0]["text"] = "The attached recording includes the screen reader's audio: listen to it as well as watching the screen.\n\n" + text
+        if wv in ("input_audio_wav_b64", "audio_url_data_uri"):
             a = base64.b64encode((session_dir / "audio.wav").read_bytes()).decode()
-            content.append({"type": "input_audio", "input_audio": {"data": a, "format": "wav"}})
+            content.append({"type": "input_audio", "input_audio": {"data": a, "format": "wav"}} if wv == "input_audio_wav_b64"
+                           else {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{a}"}})
     elif mode == "frames_plus_log" and (session_dir / "session.mp4").exists():
         for jpg in extract_frames(session_dir / "session.mp4", [s["t"] for s in steps]):
             content.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(jpg).decode()}})
@@ -68,14 +97,19 @@ def norm(s: str) -> str:
     return re.sub(r"[^a-z0-9 ]", "", s.lower()).strip()
 
 
+SILENCE = {"", "silence", "no announcement", "nothing"}   # compared after norm(), so "(silence)" counts too
+
+
 def evidence_check(findings: list[Finding], speech_log: list[dict], steps: list[dict], window: float = 3.0):
-    """Deterministic grounding: keep a finding only if what it quotes was really said (or really silent) near t_start."""
+    """Deterministic grounding: keep a finding only if what it quotes was really said (or really silent) near t_start.
+    A quote may span up to three consecutive announcements (e.g. a heading pair quoted together)."""
     supported, rejected = [], []
     for f in findings:
-        near = [e for e in speech_log if abs(e["t"] - f.t_start) <= window]
+        near = [norm(e["text"]) for e in sorted(speech_log, key=lambda e: e["t"]) if abs(e["t"] - f.t_start) <= window]
+        spans = [" ".join(near[i:j]) for i in range(len(near)) for j in range(i + 1, min(i + 4, len(near) + 1))]
         quote = norm(f.announced_text)
-        if quote:
-            ok = any(quote == norm(e["text"]) or quote in norm(e["text"]) for e in near)
+        if quote not in SILENCE:
+            ok = any(quote in s for s in spans)
             reason = "" if ok else f'announced_text "{f.announced_text}" not found in speech log within {window}s of t={f.t_start}'
         else:
             silent = [s for s in steps if s.get("silent") and abs(s["t"] - f.t_start) <= window]
@@ -85,12 +119,12 @@ def evidence_check(findings: list[Finding], speech_log: list[dict], steps: list[
     return [f for f, _ in supported], [{"finding": f.model_dump(), "reason": r} for f, r in rejected]
 
 
-def ask_findings(llm, msgs: list[dict]) -> FindingList:
+def ask_findings(llm, msgs: list[dict], extra: dict | None = None) -> FindingList:
     """One perception call, with one retry if the reply is not valid findings JSON."""
     err = ""
     for attempt in range(2):
         m = msgs if not err else msgs + [{"role": "user", "content": f"Your previous reply was invalid ({err}). Return ONLY valid JSON matching the schema."}]
-        raw = llm.chat("perception", "perception", m, max_tokens=4096)
+        raw = llm.chat("perception", "perception", m, max_tokens=4096, extra=extra)
         try:
             return parse_findings(raw)
         except (ValueError, ValidationError, json.JSONDecodeError) as e:
@@ -102,7 +136,7 @@ def run_perception(llm, session_dir: Path, caps: dict):
     steps = json.loads((session_dir / "steps.json").read_text())
     log = json.loads((session_dir / "speech_log.json").read_text())
     mode = caps.get("PERCEPTION_MODE", "text_only_log")
-    fl = ask_findings(llm, build_messages(session_dir, steps, mode, caps))
+    fl = ask_findings(llm, build_messages(session_dir, steps, mode, caps), request_extra(mode, caps))
     supported, rejected = evidence_check(fl.findings, log, steps)
     return {"mode": mode, "supported": supported, "rejected": rejected, "raw_count": len(fl.findings)}
 

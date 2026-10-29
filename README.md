@@ -23,8 +23,8 @@ flowchart LR
   V -- pass --> O[Fix + before/after audio]
 ```
 
-1. **Perception** (`MODEL_PERCEPTION`, Nemotron Nano Omni): prompted as an accessibility auditor, returns strict JSON (pydantic schema, one retry). Input adapts to `PERCEPTION_MODE` from `data/capabilities.json`:
-   - `native_av`: the session mp4 (and wav, if the probe found a working `input_audio` variant) go straight to the model.
+1. **Perception** (`MODEL_PERCEPTION`, Nemotron 3 Nano Omni via NVIDIA's API): prompted as an accessibility auditor, returns strict JSON (pydantic schema, one retry). Input adapts to `PERCEPTION_MODE` from `data/capabilities.json`:
+   - `native_av`: the session mp4 goes straight to the model, which **watches the screen and hears the screen reader's audio in the same input** (`use_audio_in_video`). The probe also supports a separate `audio_url` / `input_audio` clip.
    - `frames_plus_log`: ffmpeg samples a frame at each step timestamp and sends them with the speech-log text.
    - `text_only_log`: speech log plus per-step screen context, no pixels.
 2. **Evidence check** (deterministic): a finding is dropped unless its `announced_text` appears in the speech log near `t_start` (or it claims silence where a silent action exists). The UI shows the "rejected as unsupported" count. This is a feature: it measures how often the model hallucinated.
@@ -37,11 +37,12 @@ flowchart LR
 
 | Role | Model (set in `.env`) | Why |
 |---|---|---|
-| Perception | Nemotron 3 Nano Omni (`MODEL_PERCEPTION`) | Multimodal (video/audio/image) is the point of the product; small and fast enough to run on every session. |
+| Perception | Nemotron 3 Nano Omni (`MODEL_PERCEPTION`, `PERCEPTION_PROVIDER=nvidia`) | Sees video and hears its soundtrack in one input, which is the point of the product. Runs on NVIDIA's API because Token Factory's chat API accepts text, image and video content only (verified: `input_audio` and `audio_url` are rejected with 422 for every model). |
 | Patch | Nemotron 3 Super (`MODEL_PATCH`) | Needs precise structured edits to source files; more capable than Nano. |
 | Escalation | Nemotron 3 Ultra (`MODEL_ESCALATION`) | Used only when Super fails verification twice. |
 
-- **Nebius Token Factory**: all three models are called at runtime through its OpenAI-compatible API (`heard/app/llm.py`, `NEBIUS_BASE_URL`). Model IDs are never hardcoded; run `scripts/probe_models.py` to list the live Nemotron IDs.
+- **Nebius Token Factory**: patching (Nemotron Super) and escalation (Nemotron Ultra) run on its OpenAI-compatible API (`heard/app/llm.py`, `NEBIUS_BASE_URL`). Each role picks its provider with `{ROLE}_PROVIDER` (`nebius` by default, or `nvidia`).
+- **NVIDIA API** (`integrate.api.nvidia.com`, `NVIDIA_API_KEY`): perception with Nemotron 3 Nano Omni, for audio. Busy responses (429/503, common on the shared endpoint) are retried with backoff. Model IDs are never hardcoded; `scripts/probe_models.py` lists them and checks that the perception model really understands image, video and audio (a correct answer is required, not just HTTP 200).
 - **Tavily**: real runtime search in the main pipeline (`heard/app/pipeline/citation.py`).
 - **Other Nebius services**: Nebius Serverless (container endpoint) is the documented hosting target; no other Nebius service is used.
 

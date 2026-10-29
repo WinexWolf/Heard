@@ -1,5 +1,5 @@
 """Playwright end-to-end smoke: serves the built UI + API, loads cached demo results, checks key UI, and asserts zero axe violations."""
-import socket, subprocess, sys, time
+import os, socket, subprocess, sys, time
 import pytest
 import httpx
 from playwright.sync_api import sync_playwright
@@ -12,7 +12,9 @@ def server():
     if not (ROOT / "frontend/dist/index.html").exists():
         pytest.skip("frontend not built (cd frontend && npm run build)")
     s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
-    p = subprocess.Popen([sys.executable, "-m", "uvicorn", "heard.app.main:app", "--port", str(port)], cwd=ROOT,
+    # cached-only server whatever keys the developer has in .env (load_dotenv never overrides set variables)
+    env = {**os.environ, **{k: "<unset>" for k in ("NEBIUS_API_KEY", "NVIDIA_API_KEY", "TAVILY_API_KEY")}}
+    p = subprocess.Popen([sys.executable, "-m", "uvicorn", "heard.app.main:app", "--port", str(port)], cwd=ROOT, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(50):
         try: httpx.get(f"http://127.0.0.1:{port}/api/capabilities"); break

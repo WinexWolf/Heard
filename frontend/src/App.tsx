@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Bench, Caps, CostAgg, Edit, FindingResult, Result, Session } from './types'
+import type { Bench, Caps, CostAgg, Edit, Finding, FindingResult, Result, Session } from './types'
 import { BTN_PRIMARY, BTN_SECONDARY, Dot, hue } from './design'
 import { ThemeToggle } from './theme'
 
@@ -14,6 +14,17 @@ const ROLE_DOT: Record<string, string> = { perception: 'bg-blue', patch: 'bg-pur
 const CELL = 'border-b px-1.5 py-1'
 
 const fmt = (n: number, d = 2) => n.toFixed(d)
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
+interface LiveRun { findings: Finding[]; rejected: number; progress: Record<string, { text: string; tone: 'muted' | 'success' | 'destructive' }> }
+
+// What a live pipeline event means for one finding, in plain words.
+function progressOf(ev: { stage: string; role?: string; passed?: boolean; reason?: string }): LiveRun['progress'][string] {
+  if (ev.stage === 'citation') return { text: 'Finding the W3C guidance…', tone: 'muted' }
+  if (ev.stage === 'patch') return { text: `${ev.role === 'escalation' ? 'Nemotron Ultra' : 'Nemotron Super'} wrote a patch · verifying in Chromium…`, tone: 'muted' }
+  if (ev.passed) return { text: '✓ Fix verified', tone: 'success' }
+  return { text: `✕ ${ev.reason || 'Verification failed'}${ev.role === 'escalation' ? '' : ' · trying again'}`, tone: 'destructive' }
+}
 const money = (c?: CostAgg) => (!c ? '–' : c.cost_known === false ? 'price not set' : `$${c.cost_usd.toFixed(4)}`)
 
 function Badge({ children, dot }: { children: React.ReactNode; dot?: string }) {
@@ -69,6 +80,9 @@ export default function App() {
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [liveCost, setLiveCost] = useState<CostAgg | null>(null)
+  const [live, setLive] = useState<LiveRun | null>(null)
+  const [startedAt, setStartedAt] = useState(0)
+  const [now, setNow] = useState(0)
   const [bench, setBench] = useState<Bench | null>(null)
   const [benchErr, setBenchErr] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -82,7 +96,8 @@ export default function App() {
   }, [])
 
   const analyze = useCallback(async (id: string, live: boolean) => {
-    setRunning(true); setError(''); setStage(0); setResult(null); setSelected(''); setLiveCost(null)
+    setRunning(true); setError(''); setStage(0); setResult(null); setSelected(''); setLiveCost(null); setLive(null)
+    setStartedAt(Date.now()); setNow(Date.now())
     setStatus(live ? 'Running live analysis…' : 'Loading cached result…')
     try {
       const r = await fetch(`/api/sessions/${id}/analyze?live=${live}`, { method: 'POST' })
@@ -103,12 +118,21 @@ export default function App() {
           if (ev.cost) setLiveCost(ev.cost)
           if (ev.stage === 'findings') setStatus(`Perception found ${ev.supported.length} supported issue(s); ${ev.rejected.length} rejected as unsupported.`)
           if (ev.stage === 'verify') setStatus(`Verification ${ev.passed ? 'passed' : 'failed'} for ${ev.finding}.`)
+          if (ev.stage === 'findings' && !ev.cached) setLive({ findings: ev.supported, rejected: ev.rejected.length, progress: {} })
+          if (ev.finding && ['citation', 'patch', 'verify'].includes(ev.stage) && !ev.error)
+            setLive(l => l && { ...l, progress: { ...l.progress, [ev.finding]: progressOf(ev) } })
           if (ev.stage === 'error') throw new Error(ev.message)
-          if (ev.stage === 'done') { setResult(ev.result); setSelected(ev.result.findings[0]?.finding.id ?? ''); setStatus(`Done. ${ev.result.findings.filter((f: FindingResult) => f.fixed).length} of ${ev.result.findings.length} fixes verified.`) }
+          if (ev.stage === 'done') { setLive(null); setResult(ev.result); setSelected(ev.result.findings[0]?.finding.id ?? ''); setStatus(`Done. ${ev.result.findings.filter((f: FindingResult) => f.fixed).length} of ${ev.result.findings.length} fixes verified.`) }
         }
       }
     } catch (e) { setError((e as Error).message); setStatus('') } finally { setRunning(false) }
   }, [])
+
+  useEffect(() => {
+    if (!running) return
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [running])
 
   useEffect(() => { const s = sessions.find(x => x.id === sid); if (sid && s?.has_cache) void analyze(sid, false); else { setResult(null) } }, [sid, sessions, analyze])
 
@@ -197,10 +221,35 @@ export default function App() {
             </section>
 
             <section aria-labelledby="h-find" className="surface space-y-2 p-2">
-              <h3 id="h-find" className="text-title2">Findings {result && <span className="text-callout font-normal text-muted">({result.findings.length})</span>}</h3>
+              <h3 id="h-find" className="text-title2">Findings {(result || live) && <span className="text-callout font-normal text-muted">({result?.findings.length ?? live?.findings.length})</span>}</h3>
               {result && <p className="text-callout" data-testid="rejected-count"><strong>{result.rejected_unsupported.length}</strong> rejected as unsupported by the speech log (deterministic evidence check).</p>}
               {!result && !running && <p className="rounded-md border border-dashed p-2 text-callout text-muted">No results yet for this session. Press “Run live” to analyze it.</p>}
-              {running && !result && <p className="rounded-md bg-bg p-2 text-callout">Working…</p>}
+              {running && !result && (
+                <p className="rounded-md bg-bg p-2 text-callout">
+                  <span className="block font-semibold">{live ? `Citing, patching and verifying ${live.findings.length} finding(s) in a real browser` : 'Nemotron Omni is watching the recording and listening to the screen reader'}</span>
+                  <span className="block text-footnote text-muted">{clock(Math.max(0, Math.round((now - startedAt) / 1000)))} elapsed{live ? '' : ' · perception usually takes 1–2 minutes'}</span>
+                </p>
+              )}
+              {!result && live && live.rejected > 0 && <p className="text-callout"><strong>{live.rejected}</strong> rejected as unsupported by the speech log (deterministic evidence check).</p>}
+              {!result && live && (
+                <ol className="space-y-1">
+                  {live.findings.map(f => {
+                    const pr = live.progress[f.id]
+                    return (
+                      <li key={f.id} className={`space-y-1 rounded-md border border-l-4 bg-card p-2 ${hue(f.issue_type).bar}`}>
+                        <span className="flex flex-wrap items-baseline gap-1">
+                          <span className="text-headline">{f.issue_type.replace(/_/g, ' ')}</span>
+                          <span className={`rounded-full px-1 text-caption leading-6 font-semibold ${SEV[f.severity] ?? SEV.low}`}>{f.severity}</span>
+                          <span className="text-subheadline text-muted">at {fmt(f.t_start, 1)}s</span>
+                        </span>
+                        <span className="block text-callout"><span className="text-muted">Heard: </span><q>{f.announced_text || 'silence'}</q></span>
+                        <span className="block text-callout"><span className="text-muted">Needed: </span>{f.visible_text_or_description}</span>
+                        <span className={`block text-subheadline font-semibold ${pr?.tone === 'success' ? 'text-success-text' : pr?.tone === 'destructive' ? 'text-destructive-text' : 'text-muted'}`}>{pr?.text ?? 'Waiting…'}</span>
+                      </li>
+                    )
+                  })}
+                </ol>
+              )}
               <ol className="space-y-1">
                 {result?.findings.map(f => (
                   <li key={f.finding.id}>
