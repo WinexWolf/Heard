@@ -163,6 +163,12 @@ docker build -t heard .
 docker run --rm -p 8000:8000 --env-file .env heard      # .env optional: without keys the cached demo still works
 ```
 
+**Render** (what the public demo uses): `render.yaml` is a Blueprint. In the Render dashboard choose **New → Blueprint**, pick this repo, and paste the three secret keys (`NEBIUS_API_KEY`, `NVIDIA_API_KEY`, `TAVILY_API_KEY`) when asked. The model IDs, providers, thinking budget and prices are already set in the file. Pushes to `main` redeploy automatically.
+
+- **Sizing (measured):** the cached demo idles at about 110 MiB. A live run's verification peaks at about 400 MiB (three Chromium verifications at 512 MiB, natively), so the **Starter** plan (512 MB) works. Verifications are serialized server-wide (`VERIFY_CONCURRENCY`, default 1), so two visitors pressing "Run live" at once queue instead of running out of memory.
+- **Proxy:** uvicorn runs with `--proxy-headers`, so the per-visitor rate limit sees each visitor's real IP behind Render's proxy.
+- **Image:** about 2 GB (mostly Chromium), so the first build takes a few minutes.
+
 **Nebius Serverless** (flags from the current Nebius CLI docs: `nebius ai create --type endpoint` / `nebius ai endpoint create`; double-check with `--help`, as these may change):
 
 ```bash

@@ -26,4 +26,5 @@ COPY --from=web /app/frontend/dist frontend/dist
 # cached demo results + sessions are baked into the image (data/); only env vars are needed for "Run live"
 ENV PORT=8000 PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn heard.app.main:app --host 0.0.0.0 --port ${PORT}"]
+# behind a proxy (Render, Fly, Cloud Run): trust X-Forwarded-For so the per-visitor rate limit sees real client IPs
+CMD ["sh", "-c", "uvicorn heard.app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]

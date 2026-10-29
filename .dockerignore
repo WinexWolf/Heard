@@ -7,3 +7,9 @@ frontend/dist
 .pytest_cache
 .venv
 .heard-sync.tgz
+scripts/node_modules
+npm
+dist
+.heard
+data/runs
+data/tmp

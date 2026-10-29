@@ -5,7 +5,7 @@ we apply the edits to a temp copy of the site, load it in Chromium, assert the p
 finding type using the CDP accessibility tree, and require that axe-core reports no NEW violations.
 """
 from __future__ import annotations
-import re, shutil, tempfile
+import os, re, shutil, tempfile, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright, Page
 from .. import a11y
@@ -118,9 +118,18 @@ def check_finding(page: Page, issue_type: str, selector: str) -> tuple[bool, str
     return False, f"unknown issue_type {issue_type}", checks
 
 
+# One Chromium peaks at ~400 MiB; two live runs verifying at once would exhaust a 512 MiB host. Extra runs wait.
+_BROWSER_SLOTS = threading.BoundedSemaphore(int(os.getenv("VERIFY_CONCURRENCY") or 1))
+
+
 def verify_edits(buggy_dir: Path, edits, issue_type: str, selector: str, entry: str = "index.html",
                  after_wav: Path | None = None) -> dict:
     """Apply edits to a temp copy, assert the fix, and compare axe violations before/after."""
+    with _BROWSER_SLOTS:
+        return _verify_edits(buggy_dir, edits, issue_type, selector, entry, after_wav)
+
+
+def _verify_edits(buggy_dir: Path, edits, issue_type: str, selector: str, entry: str, after_wav: Path | None) -> dict:
     with tempfile.TemporaryDirectory() as td:
         work = Path(td) / "site"; shutil.copytree(buggy_dir, work)
         try:

@@ -1,0 +1,45 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo. Render asks for the three secret keys on first deploy.
+services:
+  - type: web
+    name: heard
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Live runs launch Chromium to verify fixes; the cached demo runs on any plan. See README "Deployment" for sizing.
+    plan: starter
+    healthCheckPath: /api/capabilities
+    autoDeploy: true
+    envVars:
+      - key: NEBIUS_API_KEY            # secret: set in the Render dashboard, never committed
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: NEBIUS_BASE_URL
+        value: https://api.tokenfactory.nebius.com/v1/
+      - key: PERCEPTION_PROVIDER
+        value: nvidia
+      - key: MODEL_PERCEPTION
+        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+      - key: PERCEPTION_THINKING_BUDGET
+        value: "2048"
+      - key: MODEL_PATCH
+        value: nvidia/nemotron-3-super-120b-a12b
+      - key: MODEL_ESCALATION
+        value: nvidia/Nemotron-3-Ultra-550b-a55b
+      - key: PRICE_PER_1M_INPUT_PERCEPTION
+        value: "0"
+      - key: PRICE_PER_1M_OUTPUT_PERCEPTION
+        value: "0"
+      - key: PRICE_PER_1M_INPUT_PATCH
+        value: "0.30"
+      - key: PRICE_PER_1M_OUTPUT_PATCH
+        value: "0.90"
+      - key: PRICE_PER_1M_INPUT_ESCALATION
+        value: "1.00"
+      - key: PRICE_PER_1M_OUTPUT_ESCALATION
+        value: "3.00"
+      - key: RATE_LIMIT_ANALYSES_PER_HOUR
+        value: "6"
+      - key: DEMO_MODE_CACHE
+        value: "true"

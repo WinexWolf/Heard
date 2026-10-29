@@ -42,3 +42,18 @@ def test_new_axe_violation_fails_a_fix():
 def test_new_violations_helper():
     assert verify.new_violations({"a": 1}, {"a": 1, "b": 2}) == ["b (2 vs 0)"]
     assert verify.new_violations({"a": 2}, {"a": 1}) == []
+
+
+def test_verifications_run_one_browser_at_a_time(monkeypatch):
+    """Two live runs must not launch two Chromiums at once (one peaks near 400 MiB on a 512 MiB host)."""
+    import threading, time
+    active, peak, lock = [0], [0], threading.Lock()
+    def fake(*a, **k):
+        with lock: active[0] += 1; peak[0] = max(peak[0], active[0])
+        time.sleep(0.05)
+        with lock: active[0] -= 1
+        return {"passed": True}
+    monkeypatch.setattr(verify, "_verify_edits", fake)
+    ts = [threading.Thread(target=verify.verify_edits, args=(None, [], "missing_name", "#x")) for _ in range(4)]
+    [t.start() for t in ts]; [t.join() for t in ts]
+    assert peak[0] == 1
